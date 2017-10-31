@@ -14,11 +14,27 @@ public abstract class Node {
 		nodeID = id;
 	}
 	
+	public void setID(int id){
+		nodeID = id;
+	}
+	
+	public int getID(){
+		return nodeID;
+	}
+	
 	public void addIncomingEdge(Edge e){
 		incomingEdges.add(e);
 	}
 	public void addOutGoingEdge(Edge e){
 		outgoingEdges.add(e);
+	}
+	
+	public ArrayList<Edge> getIncomingEdges(){
+		return incomingEdges;
+	}
+	
+	public ArrayList<Edge> getOutgoingEdges(){
+		return outgoingEdges;
 	}
 	
 	protected double sigmod(double x){		//sigmod function taken from MIT's NEAT paper

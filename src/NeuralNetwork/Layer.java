@@ -13,6 +13,10 @@ public class Layer <E> {
 		nodeList.add(n);
 	}
 	
+	public void remove(E n){
+		nodeList.remove(n);
+	}
+	
 	public ArrayList<E> getNodeList(){
 		return nodeList;
 	}

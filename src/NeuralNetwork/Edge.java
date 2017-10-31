@@ -4,7 +4,8 @@ public class Edge {
 	double weight;
 	boolean active = false; //set true when neuron fires on edge else false
 	double input = 0;
-	Node node;
+	Node node1;
+	Node node2;
 	
 	public Edge(double w){	//Every edge must have an initial weight
 		weight = w;
@@ -12,6 +13,10 @@ public class Edge {
 	
 	public void setWeight(double w){
 		weight = w;
+	}
+	
+	public double getWeight(){
+		return weight;
 	}
 	
 	public double getOutput(){ //output = w*x
@@ -28,5 +33,21 @@ public class Edge {
 	
 	public boolean isActive(){
 		return active;
+	}
+	
+	public void setNode1(Node n){
+		node1 = n;
+	}
+	
+	public void setNode2(Node n){
+		node2 = n;
+	}
+	
+	public Node getNode1(){
+		return node1;
+	}
+	
+	public Node getNode2(){
+		return node2;
 	}
 }
