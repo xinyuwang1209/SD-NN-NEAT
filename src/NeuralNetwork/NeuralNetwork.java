@@ -29,13 +29,18 @@ public class NeuralNetwork{
 		}
 	}
 	
-	public void connectNodes(Node n1, Node n2){	//adds connection between n1 and n2
+	
+	public void connectNodes(Node n1, Node n2){
 		Edge e = new Edge(1);
+		connectNodes(n1, n2, e);
+	}
+	
+	public void connectNodes(Node n1, Node n2, Edge e){	//adds connection between n1 and n2
 		
 		for(InputNode n : inputLayer.getNodeList()){
 			if(n.equals(n1)){
 				e.setNode1(n1);
-				n.addOutGoingEdge(e);
+				n.addOutgoingEdge(e);
 			}
 		}
 		
@@ -43,11 +48,11 @@ public class NeuralNetwork{
 			for(Node n : l.getNodeList()){
 				if(n.equals(n1)){
 					e.setNode1(n1);
-					n.addOutGoingEdge(e);
+					n.addOutgoingEdge(e);
 				}
 				if(n.equals(n2)){
 					e.setNode2(n2);
-					n.addOutGoingEdge(e);
+					n.addOutgoingEdge(e);
 				}
 			}
 		}
@@ -55,7 +60,7 @@ public class NeuralNetwork{
 		for(OutputNode n : outputLayer.getNodeList()){
 			if(n.equals(n2)){
 				e.setNode2(n2);
-				n.addOutGoingEdge(e);
+				n.addOutgoingEdge(e);
 			}
 		}
 	}

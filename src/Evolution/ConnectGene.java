@@ -1,40 +1,45 @@
 package Evolution;
 
+import NeuralNetwork.Edge;
 import NeuralNetwork.Node;
 
 public class ConnectGene {
 	Node inNode;
 	Node outNode;
-	double weight;
+	Edge edge;
 	Boolean enabled;
 	int innovationNumber;
 	
-	public ConnectGene(Node in, Node out, double w, int innov){
-		this(in, out, w, true, innov);
+	public ConnectGene(Node in, Node out, Edge e, int innov){
+		this(in, out, e, true, innov);
 	}
 	
-	public ConnectGene(Node in, Node out, double w, Boolean enable, int innov){
+	public ConnectGene(Node in, Node out, Edge e, Boolean enable, int innov){
 		inNode = in;
 		outNode = out;
-		weight = w;
+		edge = e;
 		enabled = enable;
 		innovationNumber = innov;
 	}
 	
-	Node getIn(){
+	Node getInNode(){
 		return inNode;
 	}
 	
-	Node getOut(){
+	Node getOutNode(){
 		return outNode;
 	}
 	
+	Edge getEdge(){
+		return edge;
+	}
+	
 	double getWeight(){
-		return weight;
+		return edge.getWeight();
 	}
 	
 	void setWeight(double w){
-		weight = w;
+		edge.setWeight(w);
 	}
 	
 	boolean isEnabled(){
@@ -52,5 +57,4 @@ public class ConnectGene {
 	int getInnovationNumber(){
 		return innovationNumber;
 	}
-	
 }

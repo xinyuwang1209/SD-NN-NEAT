@@ -1,6 +1,7 @@
 package NeuralNetwork;
 
 public class OutputNode extends Node{
+	Boolean fired = false;
 	public OutputNode(int id) {
 		super(id);
 		outgoingEdges = null;	//Output nodes don't have outgoing edges
@@ -10,11 +11,14 @@ public class OutputNode extends Node{
 	public void fire(){	//if incoming edge fires activate output
 		double sigmod = sigmod(sumOfIncomingEdges());
 		for(Edge e: incomingEdges){
-			if(sigmod >= Math.abs(fireThreshold)) {
-				System.out.println("FIRED");
-				return;
+			if(sigmod >= Math.abs(fireThreshold)){
+				fired = true;
 			}
 		}
-		System.out.println("failure");
+		fired = false;
+	}
+	
+	public boolean checkFired(){
+		return fired;
 	}
 }

@@ -1,20 +1,22 @@
 package Evolution;
 
+import NeuralNetwork.Node;
+
 public class NodeGene {
 	enum NodeType{
 		SENSOR, HIDDEN, OUTPUT
 	}
 	
-	int nodeNumber;
+	Node node;
 	NodeType nodeType;
 	
-	public NodeGene(int num, NodeType type){
-		nodeNumber = num;
+	public NodeGene(Node n, NodeType type){
+		node = n;
 		nodeType = type;
 	}
 	
-	int getNodeNumber(){
-		return nodeNumber;
+	Node getNode(){
+		return node;
 	}
 	
 	NodeType getNodeType(){

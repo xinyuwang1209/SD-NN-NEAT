@@ -25,7 +25,7 @@ public abstract class Node {
 	public void addIncomingEdge(Edge e){
 		incomingEdges.add(e);
 	}
-	public void addOutGoingEdge(Edge e){
+	public void addOutgoingEdge(Edge e){
 		outgoingEdges.add(e);
 	}
 	

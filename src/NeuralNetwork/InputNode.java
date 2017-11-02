@@ -19,5 +19,4 @@ public class InputNode extends Node{
 	public void setInput(double i){
 		input = i;
 	}
-	
 }
