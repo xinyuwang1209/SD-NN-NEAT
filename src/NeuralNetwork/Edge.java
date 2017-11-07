@@ -3,6 +3,7 @@ package NeuralNetwork;
 public class Edge {
 	double weight;
 	boolean active = false; //set true when neuron fires on edge else false
+	boolean enabled = true;
 	double input = 0;
 	Node node1;
 	Node node2;
@@ -49,5 +50,13 @@ public class Edge {
 	
 	public Node getNode2(){
 		return node2;
+	}
+	
+	public void setEnabled(Boolean enable){
+		enabled = enable;
+	}
+	
+	public boolean isEnabled(){
+		return enabled;
 	}
 }

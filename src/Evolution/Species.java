@@ -35,16 +35,21 @@ public class Species{
 	}
 	
 	public void removeLowest(){
-		int lowestIndex = 0;
-		double lowestFitness = 0;
+		ArrayList<NEATNetwork> lowestPerformer = new ArrayList<NEATNetwork>();		//place lowestPerformer in arrayList, if duplicates w/ same performance select randomly
+		double lowestFitness = maxFitness;
 		
 		for(int i=0; i<population.size(); i++){
-			if(population.get(i).getCurrentFitness() <= lowestFitness){
-				lowestIndex = i;
+			if(population.get(i).getCurrentFitness() == lowestFitness && !population.get(i).equals(firstNN))
+				lowestPerformer.add(population.get(i));
+			
+			if(population.get(i).getCurrentFitness() < lowestFitness && !population.get(i).equals(firstNN)){	//remove lowestFitness but don't remove the firstNN
+				lowestPerformer = new ArrayList<NEATNetwork>();
+				lowestPerformer.add(population.get(i));
 				lowestFitness = population.get(i).getCurrentFitness();
 			}
-				
 		}
+		
+		population.remove(lowestPerformer.get((int)Math.floor(Math.random()*lowestPerformer.size())));	//remove the lowest performer
 	}
 	
 	public int size(){
@@ -67,8 +72,10 @@ public class Species{
 		return maxFitness;
 	}
 	
-	public void updateMaxFitness(double fitness){
-		maxFitness = fitness;
+	public void updateMaxFitness(){
+		for(NEATNetwork NN : population)
+			if(maxFitness < NN.getCurrentFitness())
+				maxFitness = NN.getCurrentFitness();
 	}
 	
 	public ArrayList<NEATNetwork> getPopulation(){
