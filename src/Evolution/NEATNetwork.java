@@ -1,6 +1,9 @@
 package Evolution;
 
+import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 
 import NeuralNetwork.Edge;
 import NeuralNetwork.HiddenNode;
@@ -9,8 +12,7 @@ import NeuralNetwork.NeuralNetwork;
 import NeuralNetwork.Node;
 import NeuralNetwork.OutputNode;
 
-public class NEATNetwork extends NeuralNetwork{
-	
+public class NEATNetwork extends NeuralNetwork implements Serializable{
 	ArrayList<NodeGene> nodeGeneList = new ArrayList<NodeGene>();
 	ArrayList<ConnectGene> connectGeneList = new ArrayList<ConnectGene>();
 	double currentFitness = 0;
@@ -18,7 +20,6 @@ public class NEATNetwork extends NeuralNetwork{
 	
 	int numInputNodes = 0;
 	int numOutputNodes = 0;
-	
 	
 	public NEATNetwork(){	//used when creating a copy
 		this(null, null);
@@ -31,8 +32,7 @@ public class NEATNetwork extends NeuralNetwork{
 		numInputNodes = inputNodes.length;
 		numOutputNodes = outputNodes.length;
 		
-		int nodeNumber = 1;			//actual node/innovation count kept in NEAT
-		//int innovationNumber = 1;
+		int nodeNumber = 1;
 		
 		for(InputNode in : inputNodes){	//Add all inputs to input layer and make node gene for each
 			in.setID(nodeNumber);
@@ -47,19 +47,14 @@ public class NEATNetwork extends NeuralNetwork{
 			nodeGeneList.add(new NodeGene(out, NodeGene.NodeType.OUTPUT));
 			nodeNumber++;
 		}
-		
-		/*for(InputNode in : getInputNodes()){	//Connect all input to all output to form the initial minimal NN
-			for(OutputNode out : getOutputNodes()){
-				Edge e = new Edge(1);
-				in.addOutgoingEdge(e);
-				out.addIncomingEdge(e);
-				e.setNode1(in);
-				e.setNode2(out);
-				connectGeneList.add(new ConnectGene(in, out, e, innovationNumber));
-				innovationNumber++;
+	}
+	
+	public void sortConnectGeneList(){
+		Collections.sort(connectGeneList, new Comparator<ConnectGene>(){
+			public int compare(ConnectGene cg1, ConnectGene cg2){
+				return Double.compare(cg1.getInnovationNumber(), cg2.getInnovationNumber());
 			}
-		}
-		highestInnovationNumber = innovationNumber;*/
+		});
 	}
 	
 	public double getCurrentFitness(){
@@ -174,42 +169,26 @@ public class NEATNetwork extends NeuralNetwork{
 	
 	public void addNodeBetween(HiddenNode n, Node n1, Node n2){
 		Boolean valid = false;
-		for(Edge e : n1.getOutgoingEdges())	//verify that there is a pre-existing connection between n1 and n2
+		for(Edge e : n1.getOutgoingEdges())													//verify that there is a pre-existing connection between n1 and n2
 			if(e.getNode2().equals(n2) && e.isEnabled())
 				valid = true;
 		
-		if(valid){							//Add the node if their is a valid pre-existing connection between n1 and n2
+		if(valid){																			//Add the node if their is a valid pre-existing connection between n1 and n2
 		//_____________________________________________________________________________
 			
 			if(n1 instanceof InputNode && n2 instanceof OutputNode){
-				System.out.println("ADDING NODE BETWEEN INPUT/OUTPUT");
-				System.out.println("n1: " + n1.getID());
-				System.out.println("n: " + n.getID());
-				System.out.println("n2: " + n2.getID());
 				addHiddenNode(n, 0);														//add the hiddenNode to the first hidden Layer
 				connectNodesAndAddGenes(n, n1, n2);											//connects nodes and updates connectionGenes
 			}else if(n1 instanceof InputNode && n2 instanceof HiddenNode){					//n2 must be a hidden node
-				System.out.println("ADDING NODE BETWEEN INPUT/HIDDEN");
-				System.out.println("n1: " + n1.getID());
-				System.out.println("n: " + n.getID());
-				System.out.println("n2: " + n2.getID() + " Depth: " + getHiddenNodeLayerDepth((HiddenNode)n2));
 				addHiddenNode(n, getHiddenNodeLayerDepth((HiddenNode)n2));					//place n in the same layer as n2
 				moveHiddenSubTreeDeeper((HiddenNode)n2, true);								//move n2 and all of its connected outgoing nodes 1 layer deeper
 				connectNodesAndAddGenes(n, n1, n2);											//connects nodes and updates connectionGenes
 			}else if(n1 instanceof HiddenNode && n2 instanceof HiddenNode){					//n1 must be a hidden node
-				System.out.println("ADDING NODE BETWEEN HIDDEN/HIDDEN");
-				System.out.println("n1: " + n1.getID() + " Depth: " + getHiddenNodeLayerDepth((HiddenNode)n1));
-				System.out.println("n: " + n.getID());
-				System.out.println("n2: " + n2.getID() + " Depth: " + getHiddenNodeLayerDepth((HiddenNode)n2));
 				addHiddenNode(n, getHiddenNodeLayerDepth((HiddenNode)n1)+1);				//place n one layer deeper than n1
 				if(getHiddenNodeLayerDepth(n) == getHiddenNodeLayerDepth((HiddenNode) n2))	//if n is in the same layer as n2 move n2 one layer deeper
 					moveHiddenSubTreeDeeper((HiddenNode)n2, true);							//move n2's and all of its connected outgoing nodes 1 layer deeper
 				connectNodesAndAddGenes(n, n1, n2);											//connects nodes and updates connectionGenes
-			}else if(n1 instanceof HiddenNode && n2 instanceof OutputNode){				
-				System.out.println("ADDING NODE BETWEEN HIDDEN/OUTPUT");
-				System.out.println("n1: " + n1.getID() + " Depth: " + getHiddenNodeLayerDepth((HiddenNode)n1));
-				System.out.println("n: " + n.getID());
-				System.out.println("n2: " + n2.getID());
+			}else if(n1 instanceof HiddenNode && n2 instanceof OutputNode){
 				addHiddenNode(n, getHiddenNodeLayerDepth((HiddenNode)n1)+1);				//place n one layer deeper than n1
 				connectNodesAndAddGenes(n, n1, n2);											//connects nodes and updates connectionGenes
 			}else{
@@ -225,7 +204,11 @@ public class NEATNetwork extends NeuralNetwork{
 	
 	private void connectNodesAndAddGenes(HiddenNode n, Node n1, Node n2){
 		if(n == null){																	//connect n1 -> n2
-			Edge e = new Edge(1);
+			Edge e;
+			if(0.5 > Math.random())														//50/50 chance on positive or negative connection
+				e = new Edge(1);
+			else
+				e = new Edge(-1);
 			connectNodes(n1, n2, e);													//Connect the nodes together
 			connectGeneList.add(new ConnectGene(n1, n2, e, NEAT.innovationNumber));		//add connection gene
 			NEAT.innovationNumber++;
@@ -245,7 +228,7 @@ public class NEATNetwork extends NeuralNetwork{
 			NEAT.innovationNumber++;
 		}
 		
-		highestInnovationNumber = NEAT.innovationNumber++; //NOTE: may need to refactor for threadsafe access
+		highestInnovationNumber = NEAT.innovationNumber++; 								//NOTE: may need to refactor for threadsafe access
 	}
 	
 	private void updateEnableConnectionGene(Node n1, Node n2, boolean enable){	//NOTE: also disables the NN connection

@@ -2,7 +2,6 @@ package NeuralNetwork;
 
 import java.util.ArrayList;
 
-
 public class NeuralNetwork{
 	protected ArrayList<Layer<HiddenNode>> hiddenLayers = new ArrayList<Layer<HiddenNode>>();
 	protected Layer<InputNode> inputLayer = new Layer<InputNode>();
@@ -91,12 +90,9 @@ public class NeuralNetwork{
 		if(includeRoot)
 			moveHiddenNodeDeeper(n);
 		
-		for(Edge e : n.getOutgoingEdges()){
-			if(e.getNode2() instanceof HiddenNode){
-				System.out.println(n.getID() + " -> " + e.getNode2().getID());
+		for(Edge e : n.getOutgoingEdges())
+			if(e.getNode2() instanceof HiddenNode)
 				moveHiddenSubTreeDeeper((HiddenNode)e.getNode2(), true);
-			}
-		}
 	}
 	
 	public ArrayList<Layer<HiddenNode>> getHiddenLayers(){
@@ -112,8 +108,7 @@ public class NeuralNetwork{
 	}
 	
 	public void execute(){
-		for(InputNode n : inputLayer.getNodeList()){
-			//update input values
+		for(InputNode n : inputLayer.getNodeList()){	//update input values
 			n.fire();
 		}
 		

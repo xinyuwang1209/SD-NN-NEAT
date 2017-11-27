@@ -42,7 +42,7 @@ public class ConnectGene {
 		edge.setWeight(w);
 	}
 	
-	boolean isEnabled(){
+	public boolean isEnabled(){
 		return enabled;
 	}
 	
@@ -56,5 +56,9 @@ public class ConnectGene {
 	
 	int getInnovationNumber(){
 		return innovationNumber;
+	}
+	
+	void setInnovationNumber(int iv){
+		innovationNumber = iv;
 	}
 }

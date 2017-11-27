@@ -8,18 +8,24 @@ public class Species{
 	int generationsWithoutImprovement = 0;
 	double maxFitness = 0;
 	NEATNetwork firstNN;
+	int speciesID;
 	
 	ArrayList<NEATNetwork> population = new ArrayList<NEATNetwork>();
 	
-	public Species(){
-		this(null);
+	public Species(int sID){
+		this(null, sID);
 	}
 	
-	public Species(NEATNetwork nn){
+	public Species(NEATNetwork nn, int sID){
 		if(nn != null){
 			population.add(nn);
 			firstNN = nn;
+			speciesID = sID;
 		}
+	}
+	
+	public int getSpeciesID(){
+		return speciesID;
 	}
 	
 	public NEATNetwork getFirstNN(){
@@ -50,6 +56,13 @@ public class Species{
 		}
 		
 		population.remove(lowestPerformer.get((int)Math.floor(Math.random()*lowestPerformer.size())));	//remove the lowest performer
+	}
+	
+	public NEATNetwork getBestNetwork(){
+		for(NEATNetwork NN : population)
+			if(NN.getCurrentFitness() == maxFitness)
+				return NN;
+		return null;
 	}
 	
 	public int size(){
