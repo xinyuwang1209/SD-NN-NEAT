@@ -13,8 +13,8 @@ import NeuralNetwork.OutputNode;
 public class NEAT {
 	protected static final double MUTATEWEIGHT = 0.8;				//0.8probability of changing a connection weight
 	protected static final double MUTATEWEIGHTTYPE = 0.1;			//probability of mutating uniformly or assigning a random value
-	protected static final double MUTATEADDNODE = 0.001;			//0.03probability of adding a new node
-	protected static final double MUTATEADDCONNECTION = 0.003;		//0.01probability of adding a new connection between existing nodes
+	protected static final double MUTATEADDNODE = 0.01;			//0.03probability of adding a new node
+	protected static final double MUTATEADDCONNECTION = 0.03;		//0.01probability of adding a new connection between existing nodes
 	
 	protected static final double POPULATIONFROMCROSSOVER = 0.25;	//0.25percentage of the next generations population forming from crossover
 	protected static final double MAINTAINDISBALEGENE = 0.75;		//probability that an inherited gene is disabled if it was disabled in either parent
@@ -22,9 +22,9 @@ public class NEAT {
 	
 	protected static final int MAXSTAGNENTGENERATIONS = 50;
 	
-	protected static final int POPULATIONSIZE = 500;
+	protected static final int POPULATIONSIZE = 250;
 	protected static final int MINIMUMSPECIESSIZE = 5;
-	protected static final int MAXNUMBEROFSPECIES = 5;
+	protected static final int MAXNUMBEROFSPECIES = 10;
 	
 	protected static final double POPULATIONELIMINATION = 0.75;
 	
@@ -520,7 +520,8 @@ public class NEAT {
 					if(MUTATEWEIGHT >= Math.random()){													//mutate weights
 						if(MUTATEWEIGHTTYPE >= Math.random()){											//replace weight with random value between -1 and 1
 							NN.updateEdgeWeight(cg.getEdge(), -1+(2*Math.random()));
-							NN.updateEdgeWeight(cg.getEdge(), cg.getEdge().getWeight()+(-0.1+(0.2*Math.random())));
+						}else{																			//mutate the weight adding a number between -0.1 and 0.1 to the current weight
+							NN.updateEdgeWeight(cg.getEdge(), cg.getEdge().getWeight()+(-0.2+(0.4*Math.random())));
 						}
 					}
 					

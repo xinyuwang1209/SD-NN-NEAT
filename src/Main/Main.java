@@ -8,13 +8,20 @@ import NeuralNetwork.Node;
 
 public class Main {
 	public static void main(String[] args) throws InterruptedException{
+		//___________________________________________________________________________________________________________________
+		//Runs the Image Trainer. No relevance to the project; however, it is a good example for how to extend NEAT to other applications
 		/*ImageProcessor IP = new ImageProcessor();
 		IP.loadAndProcessImage("C:/Users/Nyarlathotep/Desktop/directoryA/1495997661352.png", 90);
 		IP.displayLoadedImage();*/
 		
+		/*ImageTrainer IT = new ImageTrainer("C:/Users/Nyarlathotep/Desktop/directoryA/", "C:/Users/Nyarlathotep/Desktop/directoryB/");
 		while(true){
 			IT.runGeneration();
-
+		}*/
+		
+		//___________________________________________________________________________________________________________________
+		
+		//Runs a single XOR tesqt and returns the final fitness
 		/*int numInputNodes = 3;
 		int numOutputNodes = 1;
 		NEAT neat = new NEAT(numInputNodes, numOutputNodes);
@@ -22,7 +29,10 @@ public class Main {
 			neat.runGeneration();
 		System.out.println("COMPLETED: " + neat.getBestSpeciesFitness());*/
 		
-				
+		//___________________________________________________________________________________________________________________
+		
+		//Runs 100 XOR tests and prints the average, min, and max solve times as well as the average number of nodes used
+		int numInputNodes = 3;
 		int numOutputNodes = 1;
 		double total = 0.0;
 		double totalActiveNodes = 0.0;
@@ -64,5 +74,6 @@ public class Main {
 		System.out.println("Max Solve Time: " + max + " Generations");
 		System.out.println("Min Solve Time: " + min + " Generations");
 
+		System.out.println("Average Active Nodes: " + totalActiveNodes/100);
 	}
 }
