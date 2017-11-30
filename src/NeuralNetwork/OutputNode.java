@@ -10,12 +10,12 @@ public class OutputNode extends Node{
 	@Override
 	public void fire(){	//if incoming edge fires activate output
 		double sigmod = sigmod(sumOfIncomingEdges());
-		for(Edge e: incomingEdges){
-			if(sigmod >= Math.abs(fireThreshold)){
-				fired = true;
-			}
+		
+		if(sigmod >= Math.abs(fireThreshold)){
+			fired = true;
+		}else{
+			fired = false;
 		}
-		fired = false;
 	}
 	
 	public boolean checkFired(){

@@ -1,6 +1,9 @@
 package Evolution;
 
+import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 
 import NeuralNetwork.Edge;
 import NeuralNetwork.HiddenNode;
@@ -9,12 +12,14 @@ import NeuralNetwork.NeuralNetwork;
 import NeuralNetwork.Node;
 import NeuralNetwork.OutputNode;
 
-public class NEATNetwork extends NeuralNetwork{
-	
+public class NEATNetwork extends NeuralNetwork implements Serializable{
 	ArrayList<NodeGene> nodeGeneList = new ArrayList<NodeGene>();
 	ArrayList<ConnectGene> connectGeneList = new ArrayList<ConnectGene>();
 	double currentFitness = 0;
 	int highestInnovationNumber = 0;
+	
+	int numInputNodes = 0;
+	int numOutputNodes = 0;
 	
 	public NEATNetwork(){	//used when creating a copy
 		this(null, null);
@@ -24,8 +29,10 @@ public class NEATNetwork extends NeuralNetwork{
 		if(inputNodes == null || outputNodes == null)
 			return;
 		
-		int nodeNumber = 1;			//actual node/innovation count kept in NEAT
-		int innovationNumber = 1;
+		numInputNodes = inputNodes.length;
+		numOutputNodes = outputNodes.length;
+		
+		int nodeNumber = 1;
 		
 		for(InputNode in : inputNodes){	//Add all inputs to input layer and make node gene for each
 			in.setID(nodeNumber);
@@ -40,19 +47,14 @@ public class NEATNetwork extends NeuralNetwork{
 			nodeGeneList.add(new NodeGene(out, NodeGene.NodeType.OUTPUT));
 			nodeNumber++;
 		}
-		
-		for(InputNode in : getInputNodes()){	//Connect all input to all output to form the initial minimal NN
-			for(OutputNode out : getOutputNodes()){
-				Edge e = new Edge(1);
-				in.addOutgoingEdge(e);
-				out.addIncomingEdge(e);
-				e.setNode1(in);
-				e.setNode2(out);
-				connectGeneList.add(new ConnectGene(in, out, e, innovationNumber));
-				innovationNumber++;
+	}
+	
+	public void sortConnectGeneList(){
+		Collections.sort(connectGeneList, new Comparator<ConnectGene>(){
+			public int compare(ConnectGene cg1, ConnectGene cg2){
+				return Double.compare(cg1.getInnovationNumber(), cg2.getInnovationNumber());
 			}
-		}
-		highestInnovationNumber = innovationNumber;
+		});
 	}
 	
 	public double getCurrentFitness(){
@@ -63,97 +65,80 @@ public class NEATNetwork extends NeuralNetwork{
 		currentFitness = fitness;
 	}
 	
-	public NEATNetwork createCopyFromConnectGenes(){
+	public NEATNetwork createCopyFromGenes(){												//pass the networks used during crossover to copy node depth in the hidden layers 
 		NEATNetwork NN = new NEATNetwork();
-
-		for(ConnectGene cg : connectGeneList){															//copy ConnectGene and copy NeuralNetwork
-			Node n1;
-			Node n2;
-			Edge e;
-			
-			if(cg.getInNode() instanceof InputNode){													//make a new copy of n1
-				n1 = new InputNode(cg.getInNode().getID());
-			}else if(cg.getInNode() instanceof HiddenNode){
-				n1 = new HiddenNode(cg.getInNode().getID());
-			}else{
-				return null;	//ERROR
+		
+		for(NodeGene ng : nodeGeneList){													//copy NodeGenes and add nodes
+			if(ng.getNode() instanceof InputNode){
+				InputNode n = new InputNode(ng.getNode().getID());
+				NN.nodeGeneList.add(new NodeGene(n, ng.getNodeType()));
+				NN.addInputNode(n);
 			}
 			
-			for(ConnectGene NNcg : NN.getConnectGeneList())												//check if n1 has already been copied
-				if(NNcg.getInNode().getID() == n1.getID())
-					n1 = NNcg.getInNode();
-			
-			if(cg.getOutNode() instanceof HiddenNode){													//make a new copy of n2
-				n2 = new HiddenNode(cg.getInNode().getID());
-			}else if(cg.getOutNode() instanceof OutputNode){
-				n2 = new OutputNode(cg.getInNode().getID());
-			}else{
-				return null;	//ERROR
+			if(ng.getNode() instanceof HiddenNode){
+				HiddenNode n = new HiddenNode(ng.getNode().getID());
+				NN.nodeGeneList.add(new NodeGene(n, ng.getNodeType()));
+				NN.addHiddenNode(n,  getHiddenNodeLayerDepth((HiddenNode)ng.getNode()));
 			}
 			
-			for(ConnectGene NNcg : NN.getConnectGeneList())												//check if n2 has already been copied
-				if(NNcg.getOutNode().getID() == n2.getID())
-					n2 = NNcg.getOutNode();
-			
-			e = new Edge(cg.getWeight());																//create a new edge
-			e.setActive(cg.getEdge().isActive());
-			e.setNode1(n1);
-			e.setNode2(n2);
-			
-			n1.addOutgoingEdge(e);																		//add edge to the node's edge lists
-			n2.addIncomingEdge(e);
-			
-			if(n1 instanceof InputNode){																//insert n1 into proper layer
-				NN.addInputNode((InputNode)n1);
-			}else if(n1 instanceof HiddenNode){
-				NN.addHiddenNode((HiddenNode)n1, getHiddenNodeLayerDepth((HiddenNode)cg.getInNode()));
-			}else{
-				return null;	//ERROR
+			if(ng.getNode() instanceof OutputNode){
+				OutputNode n = new OutputNode(ng.getNode().getID());
+				NN.nodeGeneList.add(new NodeGene(n, ng.getNodeType()));
+				NN.addOutputNode(n);
 			}
-			
-			if(n2 instanceof HiddenNode){																//insert n1 into proper layer
-				NN.addHiddenNode((HiddenNode)n2, getHiddenNodeLayerDepth((HiddenNode)cg.getOutNode()));
-			}else if(n2 instanceof OutputNode){
-				NN.addOutputNode((OutputNode)n2);
-			}else{
-				return null;	//ERROR
-			}
-			
-			NN.addConnectGene(new ConnectGene(n1, n2, e, cg.isEnabled(), cg.getInnovationNumber()));	//copy and add ConnectGene to to new NN
 		}
 		
-		for(ConnectGene NNcg : NN.getConnectGeneList()){												//copy NodeGenes
-			Boolean repeat1 = false;
-			Boolean repeat2 = false;
-			for(NodeGene NNng : NN.getNodeGeneList()){
-				if(NNng.getNode() == NNcg.getInNode())
-					repeat1 = true;
-				if(NNng.getNode() == NNcg.getInNode())
-					repeat2 = true;
-			}
+		for(ConnectGene cg : connectGeneList){												//copy ConnectGenes and add connections
+			Edge e = new Edge(cg.getWeight());
+			e.setEnabled(cg.isEnabled());
 			
-			if(!repeat1){
-				if(NNcg.getInNode() instanceof InputNode)
-					NN.addNodeGene(new NodeGene(NNcg.getInNode(), NodeGene.NodeType.SENSOR));
-				if(NNcg.getInNode() instanceof HiddenNode)
-					NN.addNodeGene(new NodeGene(NNcg.getInNode(), NodeGene.NodeType.HIDDEN));
-				if(NNcg.getInNode() instanceof OutputNode)
-					NN.addNodeGene(new NodeGene(NNcg.getInNode(), NodeGene.NodeType.OUTPUT));
-					
-			}
-			
-			if(!repeat2){
-				if(NNcg.getInNode() instanceof InputNode)
-					NN.addNodeGene(new NodeGene(NNcg.getOutNode(), NodeGene.NodeType.SENSOR));
-				if(NNcg.getInNode() instanceof HiddenNode)
-					NN.addNodeGene(new NodeGene(NNcg.getOutNode(), NodeGene.NodeType.HIDDEN));
-				if(NNcg.getInNode() instanceof OutputNode)
-					NN.addNodeGene(new NodeGene(NNcg.getOutNode(), NodeGene.NodeType.OUTPUT));
-			}
+			for(NodeGene ng : NN.nodeGeneList){
+				if(cg.getInNode().getID() == ng.getNode().getID()){
+					ng.getNode().addOutgoingEdge(e);
+					e.setNode1(ng.getNode());
+				}
 				
+				if(cg.getOutNode().getID() == ng.getNode().getID()){
+					ng.getNode().addIncomingEdge(e);
+					e.setNode2(ng.getNode());
+				}
+			}
+			
+			NN.connectGeneList.add(new ConnectGene(e.getNode1(), e.getNode2(), e, cg.isEnabled(), cg.getInnovationNumber()));
 		}
 		
 		return NN;
+	}
+	
+	public void debugPrintNetworkFromNodeGenes(){
+		debugPrintNetworkFromNodeGenes(this);
+	}
+	
+	public void debugPrintNetworkFromNodeGenes(NEATNetwork NN){
+		//debug to print copied network structure
+		System.out.println("\nBEGIN_DEBUG________________________________________\n");
+		for(NodeGene ng : NN.getNodeGeneList()){
+			if(ng.getNode() instanceof OutputNode)
+				continue;
+			
+			if(ng.getNode() instanceof HiddenNode)
+				System.out.println("[NodeID: " + ng.getNode().getID() + "] [Depth: " + NN.getHiddenNodeLayerDepth((HiddenNode)ng.getNode()) + "] " + ng.getNode());
+			else
+				System.out.println("[NodeID: " + ng.getNode().getID() + "] " + ng.getNode());
+			for(Edge e : ng.getNode().getOutgoingEdges()){
+				for(ConnectGene cg : NN.getConnectGeneList()){
+					if(e.equals(cg.getEdge()))
+						System.out.println("[ENABLED: " + cg.isEnabled() + "] [WEIGHT: " + e.getWeight() + "] " + e);
+				}
+				if(e.getNode2() instanceof HiddenNode)
+					System.out.println("[NodeID: " + e.getNode2().getID() + "] [Depth: " + NN.getHiddenNodeLayerDepth((HiddenNode)e.getNode2()) + "] " + e.getNode2());
+				else
+					System.out.println("[NodeID: " + e.getNode2().getID() + "] " + e.getNode2());
+				
+			}
+			System.out.println();
+		}
+		System.out.println("END_DEBUG__________________________________________\n");
 	}
 	
 	public void addNodeGene(NodeGene ng){
@@ -183,24 +168,33 @@ public class NEATNetwork extends NeuralNetwork{
 	}
 	
 	public void addNodeBetween(HiddenNode n, Node n1, Node n2){
-		for(Edge e : n1.getOutgoingEdges()){	//verify that there is a pre-existing connection between n1 and n2	
-			if(e.getNode2().equals(n2)){
-				//_____________________________________________________________________________
-				
-				if(n1 instanceof InputNode && n2 instanceof OutputNode){
-					addHiddenNode(n, 0);										//add the hiddenNode to the first hidden Layer
-					connectNodesAndAddGenes(n, n1, n2);							//connects nodes and updates connectionGenes
-				}else if(n1 instanceof InputNode){								//n2 must be a hidden node
-					addHiddenNode(n, getHiddenNodeLayerDepth((HiddenNode)n2));	//place n in the same layer as n2
-					moveHiddenSubTreeDeeper(n2, true);							//move n2 and all of its connected outgoing nodes 1 layer deeper
-					connectNodesAndAddGenes(n, n1, n2);							//connects nodes and updates connectionGenes
-				}else{															//n1 must be a hidden node, n2 irrelevant
-					addHiddenNode(n, getHiddenNodeLayerDepth((HiddenNode)n1)+1);//place n one layer deeper than n1
-					moveHiddenSubTreeDeeper(n1, false);							//move all of n1's connected outgoing nodes 1 layer deeper
-					connectNodesAndAddGenes(n, n1, n2);							//connects nodes and updates connectionGenes
-				}
-				//_____________________________________________________________________________
+		Boolean valid = false;
+		for(Edge e : n1.getOutgoingEdges())													//verify that there is a pre-existing connection between n1 and n2
+			if(e.getNode2().equals(n2) && e.isEnabled())
+				valid = true;
+		
+		if(valid){																			//Add the node if their is a valid pre-existing connection between n1 and n2
+		//_____________________________________________________________________________
+			
+			if(n1 instanceof InputNode && n2 instanceof OutputNode){
+				addHiddenNode(n, 0);														//add the hiddenNode to the first hidden Layer
+				connectNodesAndAddGenes(n, n1, n2);											//connects nodes and updates connectionGenes
+			}else if(n1 instanceof InputNode && n2 instanceof HiddenNode){					//n2 must be a hidden node
+				addHiddenNode(n, getHiddenNodeLayerDepth((HiddenNode)n2));					//place n in the same layer as n2
+				moveHiddenSubTreeDeeper((HiddenNode)n2, true);								//move n2 and all of its connected outgoing nodes 1 layer deeper
+				connectNodesAndAddGenes(n, n1, n2);											//connects nodes and updates connectionGenes
+			}else if(n1 instanceof HiddenNode && n2 instanceof HiddenNode){					//n1 must be a hidden node
+				addHiddenNode(n, getHiddenNodeLayerDepth((HiddenNode)n1)+1);				//place n one layer deeper than n1
+				if(getHiddenNodeLayerDepth(n) == getHiddenNodeLayerDepth((HiddenNode) n2))	//if n is in the same layer as n2 move n2 one layer deeper
+					moveHiddenSubTreeDeeper((HiddenNode)n2, true);							//move n2's and all of its connected outgoing nodes 1 layer deeper
+				connectNodesAndAddGenes(n, n1, n2);											//connects nodes and updates connectionGenes
+			}else if(n1 instanceof HiddenNode && n2 instanceof OutputNode){
+				addHiddenNode(n, getHiddenNodeLayerDepth((HiddenNode)n1)+1);				//place n one layer deeper than n1
+				connectNodesAndAddGenes(n, n1, n2);											//connects nodes and updates connectionGenes
+			}else{
+				System.out.println("Unhandled addNodeBetween Case");
 			}
+		//_____________________________________________________________________________
 		}
 	}
 	
@@ -209,26 +203,32 @@ public class NEATNetwork extends NeuralNetwork{
 	}
 	
 	private void connectNodesAndAddGenes(HiddenNode n, Node n1, Node n2){
-		Edge e1 = new Edge(1);
-		Edge e2 = new Edge(getConnectGeneWeight(n1, n2));
 		if(n == null){																	//connect n1 -> n2
-			connectNodes(n1, n2);														//Connect the nodes together
-			connectGeneList.add(new ConnectGene(n1, n2, e1, NEAT.innovationNumber));		//add connection gene
+			Edge e;
+			if(0.5 > Math.random())														//50/50 chance on positive or negative connection
+				e = new Edge(1);
+			else
+				e = new Edge(-1);
+			connectNodes(n1, n2, e);													//Connect the nodes together
+			connectGeneList.add(new ConnectGene(n1, n2, e, NEAT.innovationNumber));		//add connection gene
 			NEAT.innovationNumber++;
 		}else{																			//connect n1 ->  n -> n2
-			n.setID(NEAT.nodeNumber);
-			nodeGeneList.add(new NodeGene(n, NodeGene.NodeType.HIDDEN));	//Add the node gene
-			NEAT.nodeNumber++;
+			Edge e1 = new Edge(1);
+			Edge e2 = new Edge(getConnectGeneWeight(n1, n2));
+			
+			nodeGeneList.add(new NodeGene(n, NodeGene.NodeType.HIDDEN));				//Add the node gene
 			updateEnableConnectionGene(n1, n2, false);									//disable the connection between n1 and n2
-			connectNodes(n1, n);														//Connect the nodes together
+			
+			connectNodes(n1, n, e1);													//n1 -> n
 			connectGeneList.add(new ConnectGene(n1, n, e1, NEAT.innovationNumber));		//add connection gene
 			NEAT.innovationNumber++;
-			connectNodes(n, n2);
-			connectGeneList.add(new ConnectGene(n, n2, e2, NEAT.innovationNumber));	
+			
+			connectNodes(n, n2, e2);													//n -> n2
+			connectGeneList.add(new ConnectGene(n, n2, e2, NEAT.innovationNumber));		//add connection gene
 			NEAT.innovationNumber++;
 		}
 		
-		highestInnovationNumber = NEAT.innovationNumber++; //NOTE: may need to refactor for threadsafe access
+		highestInnovationNumber = NEAT.innovationNumber++; 								//NOTE: may need to refactor for threadsafe access
 	}
 	
 	private void updateEnableConnectionGene(Node n1, Node n2, boolean enable){	//NOTE: also disables the NN connection
