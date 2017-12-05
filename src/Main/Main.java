@@ -1,4 +1,11 @@
 package Main;
+import java.io.IOException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+
+import DKAI.DKTrainer;
+import DKAI.LuaInterface;
+import DKAI.WatchDir;
 import Evolution.NEAT;
 import ImageCategorizer.ImageProcessor;
 import ImageCategorizer.ImageTrainer;
@@ -7,7 +14,26 @@ import NeuralNetwork.Layer;
 import NeuralNetwork.Node;
 
 public class Main {
-	public static void main(String[] args) throws InterruptedException{
+	public static void main(String[] args) throws InterruptedException, IOException{
+        /*LuaInterface LI = new LuaInterface();
+        LI.startNewGame();
+        LI.outputs[3] = 1; 
+        LI.writeOutputs();
+        Thread.sleep(5000);
+        LI.outputs[3] = 0; 
+        LI.outputs[2] = 1; 
+        LI.outputs[4] = 1; 
+        LI.writeOutputs();
+        Thread.sleep(2000);
+        LI.updateInputs();*/
+		
+		DKTrainer DK = new DKTrainer();
+		while(true)
+			DK.runGeneration();
+		
+		
+		
+		
 		//___________________________________________________________________________________________________________________
 		//Runs the Image Trainer. No relevance to the project; however, it is a good example for how to extend NEAT to other applications
 		/*ImageProcessor IP = new ImageProcessor();
@@ -32,7 +58,7 @@ public class Main {
 		//___________________________________________________________________________________________________________________
 		
 		//Runs 100 XOR tests and prints the average, min, and max solve times as well as the average number of nodes used
-		int numInputNodes = 3;
+		/*int numInputNodes = 3;
 		int numOutputNodes = 1;
 		double total = 0.0;
 		double totalActiveNodes = 0.0;
@@ -74,6 +100,6 @@ public class Main {
 		System.out.println("Max Solve Time: " + max + " Generations");
 		System.out.println("Min Solve Time: " + min + " Generations");
 
-		System.out.println("Average Active Nodes: " + totalActiveNodes/100);
+		System.out.println("Average Active Nodes: " + totalActiveNodes/100);*/
 	}
 }

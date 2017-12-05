@@ -20,11 +20,11 @@ public class NEAT {
 	protected static final double MAINTAINDISBALEGENE = 0.75;		//probability that an inherited gene is disabled if it was disabled in either parent
 	protected static final double INTERSPECIESMATINGRATE = 0.001;	//probability that two different species mate	
 	
-	protected static final int MAXSTAGNENTGENERATIONS = 50;
+	protected static final int MAXSTAGNENTGENERATIONS = 25;
 	
-	protected static final int POPULATIONSIZE = 250;
-	protected static final int MINIMUMSPECIESSIZE = 5;
-	protected static final int MAXNUMBEROFSPECIES = 10;
+	protected static final int POPULATIONSIZE = 30;
+	protected static final int MINIMUMSPECIESSIZE = 3;
+	protected static final int MAXNUMBEROFSPECIES = 5;
 	
 	protected static final double POPULATIONELIMINATION = 0.75;
 	
@@ -161,7 +161,7 @@ public class NEAT {
 		for(Thread t : threadList)			//wait for all of the threads to finish
 			t.join();
 		
-		/*threadList = new ArrayList<Thread>();										//checks for duplicate innovation in the replacements
+		threadList = new ArrayList<Thread>();										//checks for duplicate innovation in the replacements
 		for(NEATNetwork NN : replacementsMutate)
 			threadList.add(mergeDuplicateInnovation(NN, replacementsMutate));
 		
@@ -172,7 +172,7 @@ public class NEAT {
 		for(Thread t : threadList)			//start all of the threads
 			t.start();
 		for(Thread t : threadList)			//wait for all of the threads to finish
-			t.join();*/
+			t.join();
 		
 		
 		System.out.println("MUTATE COMPLETED");
