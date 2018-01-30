@@ -13,24 +13,43 @@ public class LuaInterface {
 	public int[] enemies = new int[48];
 	public int[] position = new int[8];
 	
-	
 	public int deathFlag = 0;
 	public int timer = 0;
 	public int i_point = 0;
 	
 	public int outputs[] = {0,0,0,0,0,0}; //up,down,left,right,a,b
 	
-	private String luaPath = "./src/res/LUA.txt";
-	private String javaPath = "./src/res/Java.txt";
-	private File luaFile = new File(luaPath);
-	private File javaFile = new File(javaPath);
+	private String luaPath;
+	private String javaPath;
+	private File luaFile;
+	private File javaFile;
 	
 	
-	public ArrayList<Integer> getSmallInputs(){
+	public LuaInterface(String lua, String java){
+		luaPath = lua;
+		javaPath = java;
+		luaFile = new File(luaPath);
+		javaFile = new File(javaPath);
+	}
+	
+	public ArrayList<Double> getSmallInputs(){
 		int viewSize = 12;
 		int[][] inputs = new int[viewSize][viewSize];
-		int currentYPos = position[6]-(8*(viewSize/2));	//center top right to start searching for blocks
-		int currentXPos = position[7]-(8*(viewSize/2));
+		int currentYPos = (int)((position[4]+position[0])/2.0)-(8*(viewSize/2));	//center top right to start searching for blocks
+		int currentXPos = (int)((position[5]+position[1])/2.0)-(8*(viewSize/2));	//Mario takes up 2x2 8p sprites. Set position to midpoint.
+		
+		while(currentYPos % 8 != 0){		//shift current position to line with closest 8x8 grid
+			if(currentYPos % 8 >= 4)
+				currentYPos++;
+			else
+				currentYPos--;
+		}
+		while(currentXPos % 8 != 0){
+			if(currentXPos % 8 >= 4)
+				currentXPos++;
+			else
+				currentXPos--;
+		}				
 		
 		for(int x=0; x<viewSize; x++){
 			for(int y=0; y<viewSize; y++){
@@ -41,7 +60,7 @@ public class LuaInterface {
 				}
 				for(int i=0; i<ladders.length; i+=2){
 					if(Math.abs(currentYPos+(y*8)-ladders[i]) < 8 && Math.abs(currentXPos+(x*8)-ladders[i+1]) < 8){
-						inputs[x][y] = 2;
+						inputs[x][y] = 1;
 					}
 				}
 				for(int i=0; i<enemies.length; i+=2){
@@ -56,15 +75,33 @@ public class LuaInterface {
 				}
 			}
 		}
-		/*for(int x=0; x<8; x++)
-			for(int y=0; y<8; y++)
-				System.out.print(inputs[x][y]);
-		System.out.println("\n");*/
 		
-		ArrayList<Integer> output = new ArrayList<Integer>();
-		for(int x=0; x<8; x++)
-			for(int y=0; y<8; y++)
-				output.add(inputs[x][y]);
+		ArrayList<Double> output = new ArrayList<Double>();
+		for(int y=0; y<viewSize; y++)
+			for(int x=0; x<viewSize; x++)
+				output.add((double)inputs[x][y]);
+		
+		output.add(1.0);
+		output.add((((position[4]+position[0])/2.0)-23)/(199-23));	//YPos 199 to 23
+		output.add((((position[5]+position[1])/2.0)-20)/(228-20));	//XPos 20 to 228
+		
+		//Output smalloutputs view to console
+		for(int y=0; y<viewSize; y++){
+			for(int x=0; x<viewSize; x++){
+				if(inputs[x][y] == 1)
+					System.out.print(1);
+				if(inputs[x][y] == 0)
+					System.out.print(0);
+				if(inputs[x][y] == -1)
+					System.out.print("x");
+			}
+			System.out.println();
+		}
+		System.out.println(output.get(output.size()-3));
+		System.out.println(output.get(output.size()-2));
+		System.out.println(output.get(output.size()-1));
+		System.out.println("___________________________________");
+		
 		return output;
 	}
 	
@@ -115,7 +152,7 @@ public class LuaInterface {
 					+ "reset=1";
 			writer.write(input);
 			writer.close();
-			Thread.sleep(25);
+			Thread.sleep(30);
 			
 			writer = new BufferedWriter(new FileWriter(javaFile));
 			input = "Lua=1\n"
@@ -129,7 +166,9 @@ public class LuaInterface {
 			writer.write(input);
 			writer.close();
 			Thread.sleep(500);
+			System.out.println("Written Start New Game");
 		}catch(Exception e){
+			System.out.println("Start New Game Failed");
 		}
 		
 	}
@@ -142,6 +181,7 @@ public class LuaInterface {
 			while(sc.hasNext()){
 				String s = sc.nextLine();
 				//System.out.println("ln: " + s);
+				
 				if(s.equals("platforms:")){
 					i=0;
 					while(i<platforms.length){												//load platforms
@@ -152,7 +192,7 @@ public class LuaInterface {
 						}
 					}
 				}
-
+				
 				if(s.equals("ladders:")){
 					i=0;
 					while(i<ladders.length){												//load ladders
@@ -210,6 +250,9 @@ public class LuaInterface {
 			}
 			sc.close();
 		}catch(Exception e){
+			/*System.out.println("Exception updating inputs: " + e);
+			updateInputs();
+			System.out.println("Resolved.");*/
 		}
 	}
 }

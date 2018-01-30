@@ -3,6 +3,7 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
+import DKAI.DKSampleTrainer;
 import DKAI.DKTrainer;
 import DKAI.LuaInterface;
 import DKAI.WatchDir;
@@ -27,9 +28,13 @@ public class Main {
         Thread.sleep(2000);
         LI.updateInputs();*/
 		
-		DKTrainer DK = new DKTrainer();
+		
+		DKSampleTrainer test = new DKSampleTrainer();
 		while(true)
-			DK.runGeneration();
+			test.runGeneration();
+		//DKTrainer DK = new DKTrainer();
+		//while(true)
+		//	DK.runGeneration();
 		
 		
 		

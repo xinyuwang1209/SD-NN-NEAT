@@ -7,26 +7,29 @@ import Evolution.NEAT;
 import Evolution.NEATNetwork;
 
 public class DKTrainer extends NEAT{
-	static LuaInterface LI = new LuaInterface();
+	static LuaInterface LI = new LuaInterface("./src/res/LUA.txt", "./src/res/Java.txt");
+	
 	public DKTrainer() throws IOException {
-		super(LI.getSmallInputs().size()+2, 6);
+		super(LI.getSmallInputs().size(), 6);
 	}
 	
-	@Override
 	public double fitness(NEATNetwork NN){
 		LI.startNewGame();
 		double fitness = 0;
 		LI.updateInputs();										//load inputs
-		ArrayList<Integer> inputs = LI.getSmallInputs();;
+		ArrayList<Double> inputs = LI.getSmallInputs();
+		
+		int maxHeight = 0;
+		int timeElapasedSinceLastMove = LI.timer;
+		int lastX = LI.position[5];
 		
 		while(LI.deathFlag == 0){									//keep running until death
-			LI.updateInputs();	
+			LI.updateInputs();
 			inputs = LI.getSmallInputs();
 			for(int i=0; i<inputs.size(); i++){						//set the value for each input node
 				NN.getInputNodes().get(i).setInput(inputs.get(i));
 			}
-			NN.getInputNodes().get(NN.getInputNodes().size()-2).setInput(LI.position[6]);	//pass YPos
-			NN.getInputNodes().get(NN.getInputNodes().size()-1).setInput(LI.position[7]);	//Pass XPos
+			
 			
 			NN.execute();											//execute on input
 			
@@ -37,11 +40,27 @@ public class DKTrainer extends NEAT{
 					LI.outputs[i] = 0;
 			}
 			LI.writeOutputs();										//write outputs to LUA
+			
+			if(LI.outputs[3] == 1 && LI.timer == 5000)				//nudge networks in the "right" direction
+				fitness = 1;
+			
+			if(LI.position[6] > maxHeight)		//fitness based on max height mario reaches b4 dieing + how quickly he manages to get there
+				maxHeight = 207-LI.position[6];
+			
+			if(lastX != LI.position[5]){
+				timeElapasedSinceLastMove = LI.timer;
+				lastX = LI.position[5];
+			}
+			
+			if(timeElapasedSinceLastMove-LI.timer == 300)		//if we've stood still for 3 ticks reset
+				break;
+			
+			//System.out.println(timeElapasedSinceLastMove-LI.timer);
 		}
-
-		fitness = ((int)((207-LI.position[6])/32.0)*10) +	//fitness is how high mario gets
-				LI.i_point + 					//plus how many points are earned
-				(5000-LI.timer)/100.0;  		//+ how long mario survies/100
+		//System.out.println(yPos);
+		fitness += maxHeight;
+		fitness += LI.i_point/100; 					//plus how many points are earned
+		//fitness += (5000-LI.timer)/100.0;  			//+ how long mario survies/100
 		
 		return fitness;
 	}

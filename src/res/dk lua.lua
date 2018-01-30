@@ -266,13 +266,11 @@ function readAll()
 	io.close(javaFile)
 end
 
-while true do
-	count = 0;
-	
-	
-	pcall(readAll) --if we can't read file ignore error
-	
-	
+function run()
+	count = 0;	
+	if pcall(readAll) == false then --if we can't read file return
+		return
+	end
 	
 	if str:sub(10,10) == "1" then
 		controller["P1 Up"] = true
@@ -331,4 +329,8 @@ while true do
 	
 	joypad.set(controller)
 	emu.frameadvance()
+end
+
+while true do
+	run()
 end

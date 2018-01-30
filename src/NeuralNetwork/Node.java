@@ -39,6 +39,7 @@ public abstract class Node {
 	
 	protected double sigmod(double x){		//sigmod function taken from MIT's NEAT paper
 		return 1/(1+Math.pow(e, -4.9*x));	//(1/(e^(-4.9x)))
+		//return 2/(1+Math.pow(e, -4.9*x))-1;	//(2/(e^(-4.9x)))-1
 	}
 	
 	protected double sumOfIncomingEdges(){
