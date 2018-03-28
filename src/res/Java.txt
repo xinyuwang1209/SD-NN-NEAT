@@ -1,8 +1,0 @@
-Lua=1
-up=0
-down=0
-left=0
-right=0
-a=0
-b=1
-reset=0

@@ -11,24 +11,26 @@ import NeuralNetwork.Node;
 import NeuralNetwork.OutputNode;
 
 public class NEAT {
-	protected static final double MUTATEWEIGHT = 0.85;				//0.8probability of changing a connection weight
-	protected static final double MUTATEWEIGHTTYPE = 0.1;			//probability of mutating uniformly or assigning a random value
-	protected static final double MUTATEADDNODE = 0.01;				//0.01probability of adding a new node
+	protected static final double MUTATEWEIGHT = 0.80;				//0.8probability of changing a connection weight
+	protected static final double MUTATEWEIGHTTYPE = 0.05;			//probability of mutating uniformly or assigning a random value
+	protected static final double MUTATEADDNODE = 0.001;				//0.01probability of adding a new node
 	protected static final double MUTATEADDCONNECTION = 0.03;		//0.03probability of adding a new connection between existing nodes
 	
 	protected static final double POPULATIONFROMCROSSOVER = 0.25;	//0.25percentage of the next generations population forming from crossover
 	protected static final double MAINTAINDISBALEGENE = 0.75;		//probability that an inherited gene is disabled if it was disabled in either parent
 	protected static final double INTERSPECIESMATINGRATE = 0.005;	//probability that two different species mate	
 	
-	protected static final int MAXSTAGNENTGENERATIONS = 250;
+	protected static final int MAXSTAGNENTGENERATIONS = 2000;
 	
-	protected static final int POPULATIONSIZE = 100;
+	protected static final int POPULATIONSIZE = 150;
 	protected static final int MINIMUMSPECIESSIZE = 5;
 	
-	protected static final int MINNUMBEROFSPECIES = 5;
+	protected static final int MINNUMBEROFSPECIES = 3;
 	protected static final int MAXNUMBEROFSPECIES = 10;
 	
 	protected static final double POPULATIONELIMINATION = 0.75;
+	
+	protected static final double STEP = 0.025;
 	
 	protected static int innovationNumber = 1;
 	protected static int nodeNumber = 1;
@@ -90,7 +92,15 @@ public class NEAT {
 	
 	
 	
-	public void runGeneration() throws InterruptedException{	
+	public void runGeneration() throws InterruptedException{
+		//check and calculate if any of the population is missing b4 the generation is ran.
+		//this is a quick fix for NEAT child deleting species from the population
+		int populationSize = 0;
+		for(Species s : population){
+			populationSize += s.size();
+		}
+		int populationMissing = POPULATIONSIZE - populationSize;
+		
 		if(generationCount == 0){		//initial execution at generation 0
 			//execute();
 			for(Species s : population)
@@ -161,8 +171,8 @@ public class NEAT {
 		System.out.println("Eliminated: " + eliminated);
 		System.out.println("ELIMINATE COMPLETED");
 		
-		int AmountFromCrossOver = (int)(eliminated*POPULATIONFROMCROSSOVER);
-		int AmountFromMutate = eliminated - AmountFromCrossOver;
+		int AmountFromCrossOver = (int)((eliminated + populationMissing)*POPULATIONFROMCROSSOVER);	//add populationsMissing to eliminated to correct total population size
+		int AmountFromMutate = (eliminated + populationMissing) - AmountFromCrossOver;
 		
 		//MUTATE_____________________________________________________________________________________________________________________________
 		ArrayList<NEATNetwork> replacementsMutate = new ArrayList<NEATNetwork>();		//cycles through species list and for each pick a random NN to mutate into next generation
@@ -171,7 +181,7 @@ public class NEAT {
 		while(AmountFromMutate > 0){
 			int speciesSize = population.get(speciesIndex).getPopulation().size();
 			NEATNetwork NN = population.get(speciesIndex).getPopulation().get((int)(speciesSize*Math.random())).createCopyFromGenes();	//Set NN to a copy of randomly referenced NN in current species
-			threadList.add(mutate(NN, 0.02));	//create mutate thread
+			threadList.add(mutate(NN, STEP));	//create mutate thread
 			replacementsMutate.add(NN);	//list of all NN to be mutated as replacements
 			AmountFromMutate--;
 			

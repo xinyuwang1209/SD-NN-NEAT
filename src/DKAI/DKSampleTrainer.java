@@ -14,22 +14,23 @@ import Evolution.Species;
 public class DKSampleTrainer extends NEAT{
 	static LuaInterface LI = new LuaInterface("./src/res/LUA.txt", "./src/res/Java.txt");
 	ArrayList<ArrayList<Double>> view = new ArrayList<ArrayList<Double>>();
-	ArrayList<ArrayList<Integer>> output = new ArrayList<ArrayList<Integer>>();
+	ArrayList<ArrayList<Integer>> output = new ArrayList<ArrayList<Integer>>(); //[i][up,down,left,right,a,b]
 
 	private boolean resetFlag = false;
 	private boolean pauseFlag = false;
+	private boolean runSampleGenerationFlag = true;
+	
+	double sampleFitnessThreshold = 1.0;
 	
 	public DKSampleTrainer() throws IOException{
-		super(LI.getSmallInputs().size(), 6);
+		super(LI.getSmallInputs().size(), 5);
 		System.out.println(LI.getSmallInputs().size());
 		parallelExecution = true;	//initially we can run parallelExecution on sampleFitness		
 		
 		JFrame f = new JFrame();
 		f.addKeyListener(new inputHandler());
 		f.setVisible(true);
-		
-		
-		
+
 		LI.startNewGame();
 		LI.updateInputs();											//load inputs
 		ArrayList<Double> inputs = LI.getSmallInputs();
@@ -53,9 +54,9 @@ public class DKSampleTrainer extends NEAT{
 				resetFlag = false;
 			}
 			
-			LI.writeOutputs();										//write outputs to LUA
 			LI.updateInputs();
-
+			LI.writeOutputs();										//write outputs to LUA
+			
 			inputs = LI.getSmallInputs();/*
 			System.out.println("View: " + view.size());
 			System.out.println("Out: " + output.size());*/
@@ -71,32 +72,51 @@ public class DKSampleTrainer extends NEAT{
 					
 					output.add(outputs);
 					changed = true;
+					//System.out.println("FRAME CHANGED!\n");
+					break;	//break as conditions loop was checking for have been met
 				}
 			}
 			//this is for when you enter a frame holding a key but you want to leave the frame by holding a different set of keys
 			if(!changed){								//if the frame hasn't changed
 				for(int j=0; j<outputs.size(); j++){	//compare each of the outputs to each of the outputs in the last element of output
-					if(output.get(output.size()-1).get(j) != outputs.get(j)){	//if a single output has changed
+					if(output.get(output.size()-1).get(j) != LI.outputs[j]){	//if a single output has changed
 						output.remove(output.size()-1);							//remove the last entry in output
-																				//note don't removove and re-add view as it hasn't changed
-						outputs = new ArrayList<Integer>();						//re-add the updated outputs
+																				//note don't remove and re-add view as it hasn't changed
+						ArrayList<Integer> newOutputs = new ArrayList<Integer>();						//re-add the updated outputs
 						for(Integer k : LI.outputs)
-							outputs.add(k);
+							newOutputs.add(k);
 						
-						output.add(outputs);
+						output.add(newOutputs);
+						//System.out.println("UPDATED NEW OUTPUTS");
+						break;
 					}
 				}
 			}
-			
 		}
 
 		System.out.println("View Size: " + view.size());
+		int i=0;
+		int j=0;
+		for(ArrayList<Double> ad : view){
+			for(Double d : ad){
+				System.out.print(d.intValue());
+				i++;
+				if(i%LI.getViewSize() == 0)
+					System.out.println();
+			}
+			System.out.println("\n\nudlrab");
+			for(Integer o : output.get(j)){
+				System.out.print(o);
+			}
+			j++;
+			System.out.println("\n_______________________");
+			i=0;
+		}
 		System.out.println("Finsihed");
 		//f.dispose();
 	}
 	
 	Boolean finSample = false;
-	double sampleFitnessThreshold = 0.90;
 	@Override
 	public double fitness(NEATNetwork NN){
 		double maxFitness = 0;
@@ -105,21 +125,18 @@ public class DKSampleTrainer extends NEAT{
 				maxFitness = s.getMaxFitness();
 		
 		
-		if(maxFitness >= sampleFitnessThreshold && finSample == false){
+		if((maxFitness >= sampleFitnessThreshold && !finSample) || (!runSampleGenerationFlag && !finSample)){
+			System.out.println("PING PING PING ");
+			//we've finished with the sample so next execution we'll run the game fitness
+			parallelExecution = false;			//running on the emulator so only one execution at a time
 			finSample = true;
 			removeNonMaxSpecies();
 		}
 		
-		if(maxFitness < sampleFitnessThreshold){
-			double sf = sampleFitness(NN);
-			if(sf >= sampleFitnessThreshold){		//we've finished with the sample so next execution we'll run the game fitness
-				parallelExecution = false;			//running on the emulator so only one execution at a time
-				
-			}
+		if(maxFitness < sampleFitnessThreshold && runSampleGenerationFlag)
 			return sampleFitness(NN);
-		}else{
+		else
 			return gameFitness(NN);
-		}
 	}
 	
 	public void removeNonMaxSpecies(){
@@ -134,7 +151,6 @@ public class DKSampleTrainer extends NEAT{
 				i--;
 			}
 		}
-				
 	}
 	
 	
@@ -150,7 +166,7 @@ public class DKSampleTrainer extends NEAT{
 		double fitness = 0;
 		for(int i=0; i<view.size(); i++){	//for each saved frame in view
 			
-			for(int j=0; j<NN.getInputNodes().size(); j++){	//for each input node set it equal to the corresponding int from the frame
+			for(int j=0; j<view.get(i).size(); j++){	//for each input node set it equal to the corresponding int from the frame
 				NN.getInputNodes().get(j).setInput(view.get(i).get(j));
 			}
 			
@@ -166,7 +182,9 @@ public class DKSampleTrainer extends NEAT{
 			
 			if(match)
 				fitness++;
-		}
+			/*else
+				break;		//Only reward sequential success.
+*/		}
 
 		return fitness/view.size();
 	}
@@ -192,11 +210,14 @@ public class DKSampleTrainer extends NEAT{
 			NN.execute();											//execute on input
 			
 			for(int i=0; i<NN.getOutputNodes().size(); i++){		//set outputs based on fired nodes in output layer
+				
 				if(NN.getOutputNodes().get(i).checkFired())
 					LI.outputs[i] = 1;
 				else
 					LI.outputs[i] = 0;
+				//System.out.print(LI.outputs[i]);
 			}
+			//System.out.println("\n");
 			LI.writeOutputs();										//write outputs to LUA
 			
 			if(LI.position[6] > maxHeight)		//fitness based on max height mario reaches b4 dieing + how quickly he manages to get there
@@ -227,7 +248,7 @@ public class DKSampleTrainer extends NEAT{
 		}
 
 		@Override
-		public void keyPressed(KeyEvent e){	//up,down,left,right,a,b
+		public synchronized void keyPressed(KeyEvent e){	//up,down,left,right,a,b
 			int key = e.getKeyCode();
 			
 			if(key == KeyEvent.VK_UP)
@@ -243,18 +264,24 @@ public class DKSampleTrainer extends NEAT{
 			if(key == KeyEvent.VK_B)
 				LI.outputs[5] = 1;
 			
-			if(key == KeyEvent.VK_Q)
+			if(key == KeyEvent.VK_Q)				//press "Q" to reset the game while providing user training input
 				resetFlag = true;
 			
-			if(key == KeyEvent.VK_O)
+			if(key == KeyEvent.VK_O)				//press "P" to pause training
 				pauseFlag = true;
 			
-			if(key == KeyEvent.VK_P)
+			if(key == KeyEvent.VK_P)				//press "P" to resume training
 				pauseFlag = false;
+			
+			if(key == KeyEvent.VK_W){				//press "W" to end training generations and proceed to game training
+				runSampleGenerationFlag = false;
+				System.out.println("ENDING TRAINING GENERATION");
+			}
+				
 		}
 
 		@Override
-		public void keyReleased(KeyEvent e){
+		public synchronized void keyReleased(KeyEvent e){
 			int key = e.getKeyCode();
 			
 			if(key == KeyEvent.VK_UP)
