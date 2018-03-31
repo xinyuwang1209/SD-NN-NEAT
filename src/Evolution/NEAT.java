@@ -88,8 +88,6 @@ public class NEAT {
 		}
 	}
 	
-	
-	
 	public void runGeneration() throws InterruptedException{	
 		if(generationCount == 0){		//initial execution at generation 0
 			//execute();
@@ -475,9 +473,7 @@ public class NEAT {
 						cg.toogleEnable();
 	    }
 	}
-	
-	
-	
+		
 	private void crossOverAddNodeGenes(NEATNetwork NN, NEATNetwork nn, ConnectGene cg, Boolean n1Repeat, Boolean n2Repeat){
 		for(NodeGene ng : nn.getNodeGeneList()){			//add nodeGenes
 			if(ng.getNode().getID() == cg.getInNode().getID() && !n1Repeat){

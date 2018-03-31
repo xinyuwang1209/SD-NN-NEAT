@@ -4,5 +4,5 @@ down=0
 left=0
 right=0
 a=0
-b=1
+b=0
 reset=0
