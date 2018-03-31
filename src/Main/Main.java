@@ -32,6 +32,11 @@ public class Main {
 		DKSampleTrainer test = new DKSampleTrainer();
 		while(true)
 			test.runGeneration();
+		
+		
+		
+		
+		
 		//DKTrainer DK = new DKTrainer();
 		//while(true)
 		//	DK.runGeneration();

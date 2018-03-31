@@ -6,13 +6,18 @@ import java.io.IOException;
 import java.util.ArrayList;
 
 import javax.swing.JFrame;
+import javax.swing.SwingUtilities;
 
 import Evolution.NEAT;
 import Evolution.NEATNetwork;
 import Evolution.Species;
+import NEAT_GUI.GUINetworkFrame;
 
 public class DKSampleTrainer extends NEAT{
 	static LuaInterface LI = new LuaInterface("./src/res/LUA.txt", "./src/res/Java.txt");
+	private GUINetworkFrame GNF;
+	
+	
 	ArrayList<ArrayList<Double>> view = new ArrayList<ArrayList<Double>>();
 	ArrayList<ArrayList<Integer>> output = new ArrayList<ArrayList<Integer>>(); //[i][up,down,left,right,a,b]
 
@@ -24,6 +29,19 @@ public class DKSampleTrainer extends NEAT{
 	
 	public DKSampleTrainer() throws IOException{
 		super(LI.getSmallInputs().size(), 5);
+		
+		SwingUtilities.invokeLater(new Runnable() {
+			public void run(){
+				try{
+					GNF = new GUINetworkFrame();
+					GNF.setVisible(true);
+				}
+				catch(Exception e){
+					e.printStackTrace();
+				}
+			}		
+		});
+		
 		System.out.println(LI.getSmallInputs().size());
 		parallelExecution = true;	//initially we can run parallelExecution on sampleFitness		
 		
@@ -208,6 +226,8 @@ public class DKSampleTrainer extends NEAT{
 			}
 			
 			NN.execute();											//execute on input
+			GNF.updateNetwork(NN);
+			
 			
 			for(int i=0; i<NN.getOutputNodes().size(); i++){		//set outputs based on fired nodes in output layer
 				
