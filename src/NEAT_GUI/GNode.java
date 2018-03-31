@@ -1,4 +1,6 @@
 package NEAT_GUI;
+import java.awt.Color;
+
 /*
  * Swing classes
  * =========================
@@ -16,19 +18,39 @@ import javax.swing.JComponent;
 public class GNode extends JComponent{
 	
 	private double xcoor, ycoor;
+	private Color color;
+	private boolean isActive; 
 
-	public GNode(double x, double y){
+	/*
+	 * Constructor 
+	 */
+	public GNode(double x, double y, Color c){
 		xcoor = x;
 		ycoor = y;
+		color = c;
+		isActive = true;
 	}
 
+	/*
+	 * Getters for member variables 
+	 */
 	public double getXCoor(){
 		return xcoor;
 	}
-	
 	public double getYCoor(){
 		return ycoor;
 	}
+	public Color getColor() {
+		return color;
+	}
+	public boolean getIsActive() {
+		return isActive;
+	}
 	
-
+	/*
+	 * Setters for member variables 
+	 */
+	public void setIsActive(boolean b) {
+		isActive = b;
+	}
 }

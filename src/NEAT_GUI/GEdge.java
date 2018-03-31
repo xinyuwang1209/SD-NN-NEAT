@@ -18,22 +18,31 @@ public class GEdge extends JComponent{
 
 	private float weight;
 	private GNode startNode, endNode;
+	private boolean isActive;
 	
-	public GEdge(GNode n1, GNode n2, float w){
+	/*
+	 * Constructor 
+	 */
+	public GEdge(GNode n1, GNode n2, float w, boolean b){
 		weight = w;
 		startNode = n1;
 		endNode = n2;
+		isActive = b;
 	}
 	
+	/*
+	 * Getters for member variables 
+	 */
 	public float getWeight(){
 		return weight;
 	}
-	
 	public GNode getStartNode(){
 		return startNode;
 	}
-	
 	public GNode getEndNode(){
 		return endNode;
+	}
+	public boolean getIsActive() {
+		return isActive;
 	}
 }

@@ -1,12 +1,14 @@
 package Main;
+import java.util.ArrayList;
+
 import javax.swing.SwingUtilities;
 
 import Evolution.NEAT;
-import ImageCategorizer.ImageProcessor;
-import ImageCategorizer.ImageTrainer;
-import NEAT_GUI.GNeuralNetwork;
+import Evolution.NEATNetwork;
+import NEAT_GUI.GUINetworkFrame;
 import NeuralNetwork.Edge;
 import NeuralNetwork.Layer;
+import NeuralNetwork.NeuralNetwork;
 import NeuralNetwork.Node;
 
 public class Main {
@@ -35,13 +37,14 @@ public class Main {
 		//___________________________________________________________________________________________________________________
 		
 		//Runs 100 XOR tests and prints the average, min, and max solve times as well as the average number of nodes used
+		
 		int numInputNodes = 3;
 		int numOutputNodes = 1;
 		double total = 0.0;
 		double totalActiveNodes = 0.0;
 		int min = 0;
 		int max = 0;
-		//for(int i=0; i<100; i++){
+		for(int i=0; i<5; i++){
 			int count = 0;
 			NEAT neat = new NEAT(numInputNodes, numOutputNodes);
 			while(0.9 >= neat.getBestSpeciesFitness()){
@@ -72,25 +75,26 @@ public class Main {
 				min = count;
 			if(max < count)
 				max = count;
-			
-			SwingUtilities.invokeLater(new Runnable() {
-				public void run(){
-					try{
-						GNeuralNetwork frame = new GNeuralNetwork(neat.getBestNetwork());
-						frame.setVisible(true);
-					}
-					catch(Exception e){
-						e.printStackTrace();
-					}
-				}		
-			});	
-		//}
+
+		}
+		
+		SwingUtilities.invokeLater(new Runnable() {
+			public void run(){
+				try{
+					GUINetworkFrame frame = new GUINetworkFrame();
+					frame.setVisible(true);
+				}
+				catch(Exception e){
+					e.printStackTrace();
+				}
+			}		
+		}); 
+		
 		System.out.println("Average Solve Time: " + total/100 + " Generations");
 		System.out.println("Max Solve Time: " + max + " Generations");
 		System.out.println("Min Solve Time: " + min + " Generations");
 
 		System.out.println("Average Active Nodes: " + totalActiveNodes/100);
-		
 		
 	}
 }
