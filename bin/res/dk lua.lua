@@ -260,57 +260,13 @@ controller["P1 B"] = false
 str = ""
 
 function readAll()
-	javaFile = io.open("Java.txt", "r")
+	javaFile = io.open("LUA.txt", "r")
 	io.input(javaFile)
 	str = io.read("*a")
 	io.close(javaFile)
 end
 
-function run()
-	count = 0;	
-	if pcall(readAll) == false then --if we can't read file return
-		return
-	end
-	
-	if str:sub(10,10) == "1" then
-		controller["P1 Up"] = true
-	else
-		controller["P1 Up"] = false
-	end
-	
-	if str:sub(17,17) == "1" then
-		controller["P1 Down"] = true
-	else
-		controller["P1 Down"] = false
-	end
-
-	if str:sub(24,24) == "1" then
-		controller["P1 Left"] = true
-	else
-		controller["P1 Left"] = false
-	end
-	
-	if str:sub(32,32) == "1" then
-		controller["P1 Right"] = true
-	else
-		controller["P1 Right"] = false
-	end
-	
-	if str:sub(36,36) == "1" then
-		controller["P1 A"] = true
-	else
-		controller["P1 A"] = false
-	end
-	
-	if str:sub(40,40) == "1" then
-		controller["P1 B"] = true
-	else
-		controller["P1 B"] = false
-	end
-	if str:sub(48,48) == "1" then
-		savestate.load("Donkey Kong.QuickNes.QuickSave1.State")
-	end
-		
+function writeAll()
 	deathFlag = checkFlag() -- flag == 1 if dead
 	inputs = getObjects()
 	enemies = inputs["enemies"]
@@ -318,19 +274,77 @@ function run()
 	items = getItems()
 	states = getState()
 	position = getPosition()
-	str = "Lua=0\nplatforms:\n" .. to_string(platforms) .."\nladders:\n" .. to_string(ladders) .. "\nitems2:\n" .. to_string(items2) .. "\ntiles:\n" .. to_string(tiles) .. "\nenemies2:\n" .. to_string(enemies2) .. "\ndeathFlag:\n" .. deathFlag  .. "\nenemies:\n" .. to_string(enemies) .. "\nmvgplat:\n" .. to_string(mvgplat) .. "\nitems:\n" .. to_string(items) .. "\nstates:\n" .. to_string(states) .. "\nposition:\n" .. to_string(position)
+	str = "Lua=0\nup=0\ndown=0\nleft=0\nright=0\na=0\nb=0\nreset=0\nplatforms:\n" .. to_string(platforms) .."\nladders:\n" .. to_string(ladders) .. "\nitems2:\n" .. to_string(items2) .. "\ntiles:\n" .. to_string(tiles) .. "\nenemies2:\n" .. to_string(enemies2) .. "\ndeathFlag:\n" .. deathFlag  .. "\nenemies:\n" .. to_string(enemies) .. "\nmvgplat:\n" .. to_string(mvgplat) .. "\nitems:\n" .. to_string(items) .. "\nstates:\n" .. to_string(states) .. "\nposition:\n" .. to_string(position)
+
 	luaFile = io.open("LUA.txt", "w")
 	io.output(luaFile)
 	io.write(str)
 	io.flush()
 	io.close()
 	
-	count = count + 1;
-	
-	joypad.set(controller)
-	emu.frameadvance()
 end
 
 while true do
-	run()
+	
+	
+	if pcall(readAll) then
+	
+		if str:sub(10,10) == "1" then
+			controller["P1 Up"] = true
+		else
+			controller["P1 Up"] = false
+		end
+		
+		if str:sub(17,17) == "1" then
+			controller["P1 Down"] = true
+		else
+			controller["P1 Down"] = false
+		end
+
+		if str:sub(24,24) == "1" then
+			controller["P1 Left"] = true
+		else
+			controller["P1 Left"] = false
+		end
+		
+		if str:sub(32,32) == "1" then
+			controller["P1 Right"] = true
+		else
+			controller["P1 Right"] = false
+		end
+		
+		if str:sub(36,36) == "1" then
+			controller["P1 A"] = true
+		else
+			controller["P1 A"] = false
+		end
+		
+		if str:sub(40,40) == "1" then
+			controller["P1 B"] = true
+		else
+			controller["P1 B"] = false
+		end
+		if str:sub(48,48) == "1" then
+			savestate.load("Donkey Kong.QuickNes.QuickSave1.State")
+		end
+		
+		if(str:sub(5,5) == "1") then			--run at 4-frames per write
+			x = 0
+			if str:sub(10,10) == "1" then
+				x = 48
+			else
+				x = 4
+			end
+			
+			for i=x,1,-1 do 
+				joypad.set(controller)
+				emu.frameadvance()
+			end
+			
+			while not pcall(writeAll) do
+			end
+		end
+	end
+	
+	
 end

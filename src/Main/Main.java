@@ -32,12 +32,10 @@ public class Main {
 		DKSampleTrainer test = new DKSampleTrainer();
 		while(true)
 			test.runGeneration();
+		
 		//DKTrainer DK = new DKTrainer();
 		//while(true)
 		//	DK.runGeneration();
-		
-		
-		
 		
 		//___________________________________________________________________________________________________________________
 		//Runs the Image Trainer. No relevance to the project; however, it is a good example for how to extend NEAT to other applications
