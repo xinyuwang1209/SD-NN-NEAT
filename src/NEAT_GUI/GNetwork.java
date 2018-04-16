@@ -141,7 +141,7 @@ public class GNetwork{
 				/*Creating the initial hidden GNode*/
 				hiddenLayer.put(hidden.getID(), 
 						new GNode((startRegionX + equiDistanceX), (startRegionY + equiDistanceY), Color.BLUE));
-				startRegionY += equiDistanceY;
+				equiDistanceY += startRegionY;
 				
 				/*Determining the activeness of the node
 				 * AND determining the activeness of the incoming edges of the node*/
