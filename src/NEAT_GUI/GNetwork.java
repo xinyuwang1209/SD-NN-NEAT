@@ -131,9 +131,10 @@ public class GNetwork{
 		
 		/*x axis spacing between hidden layers*/
 		int middleSectionWidth = totalWidth - ((nodeSize * 4) + (nodeSize * numColumns));
+		int x_multiplier = 1;
 		
 		for(Layer<HiddenNode> hLayer : hidLayers){	
-			int equiDistanceX = middleSectionWidth/(hidLayers.size()*2);
+			int equiDistanceX = (middleSectionWidth/(hidLayers.size()*2)) * x_multiplier + nodeSize;
 			int equiDistanceY = 0;
 			ArrayList<HiddenNode> hidNodes = hLayer.getNodeList();
 			
@@ -177,6 +178,7 @@ public class GNetwork{
 			}
 			/* Preparing for next set of nodes*/
 			startRegionY = nodeSize;
+			x_multiplier++;
 		}
 
 		startRegionY = nodeSize;
