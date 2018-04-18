@@ -192,76 +192,55 @@ public class ChessSampleTrainer extends NEAT{
 	
 	
 	
-	
+	@Override
+	public void execute() throws InterruptedException{
+		System.out.println("parallelExecution: "  + parallelExecution);
+		BuildRank();
+		if(!parallelExecution){
+			for(Species s : population){																	//run each NN and update their fitness
+				for(NEATNetwork NN : s.getPopulation()){
+					NN.setCurrentFitness(fitness(NN));
+				}
+			}
+		}else{
+			ArrayList<Thread> threadList = new ArrayList<Thread>();
+			for(Species s : population){																	//run each NN and update their fitness
+				for(NEATNetwork NN : s.getPopulation()){
+					threadList.add(new Thread(){
+							@Override
+				            public void run(){
+				            	NN.setCurrentFitness(fitness(NN));
+				            }
+						}
+					);
+				}
+			}
+			for(Thread t : threadList)			//start all of the threads
+				t.start();
+			for(Thread t : threadList)			//wait for all of the threads to finish
+				t.join();	
+		}
+	}
+
 	
 	
 	@Override
 	public double fitness(NEATNetwork NN){
-		BuildRank();
-//		Play tournemnt
-		double maxFitness = 0;
-		for(Species s : population) {
-			if(s.getMaxFitness() > maxFitness) {
-				maxFitness = s.getMaxFitness();
-			}
-		}
-	}
-	
-	public double gameFitness(NEATNetwork NN){
-		LI.startNewGame();
 		double fitness = 0;
-		LI.updateInputs();										//load inputs
-		ArrayList<Double> inputs = LI.getSmallInputs();
-		
-		int maxHeight = 0;
-		int timeElapasedSinceLastMove = LI.timer;
-		int lastX = LI.position[5];
-		
-		while(LI.deathFlag == 0){									//keep running until death
-			LI.updateInputs();
-			inputs = LI.getSmallInputs();
-			for(int i=0; i<inputs.size(); i++){						//set the value for each input node
-				NN.getInputNodes().get(i).setInput(inputs.get(i));
+		int LevelSize;
+		ArrayList<Integer> CurrentLevelRank;
+		int NNIndex;
+		for (int i=0; i<RANK.size();i++) {
+			CurrentLevelRank = RANK.get(i);
+			LevelSize = CurrentLevelRank.size();
+			for (int j=0; j<LevelSize; j++) {
+				NNIndex = CurrentLevelRank.get(j);
+				if (NN == population.get(0).getPopulation().get(NNIndex)) {
+					fitness = i/RANK.size();
+				}
 			}
 			
-			NN.execute();											//execute on input
-			GNF.updateNetwork(NN, 7);
-			try {
-				Thread.sleep(10);
-			} catch (InterruptedException e) {
-				e.printStackTrace();
-			}
-			
-			
-			for(int i=0; i<NN.getOutputNodes().size(); i++){		//set outputs based on fired nodes in output layer
-				
-				if(NN.getOutputNodes().get(i).checkFired())
-					LI.outputs[i] = 1;
-				else
-					LI.outputs[i] = 0;
-				//System.out.print(LI.outputs[i]);
-			}
-			//System.out.println("\n");
-			LI.writeOutputs();										//write outputs to LUA
-			
-			if(LI.position[6] > maxHeight)		//fitness based on max height mario reaches b4 dieing + how quickly he manages to get there
-				maxHeight = 207-LI.position[6];
-			
-			/*if(lastX != LI.position[5]){
-				timeElapasedSinceLastMove = LI.timer;
-				lastX = LI.position[5];
-			}
-			
-			if(timeElapasedSinceLastMove-LI.timer == 300)		//if we've stood still for 3 ticks reset
-				break;*/
-			
-			//System.out.println(timeElapasedSinceLastMove-LI.timer);
 		}
-		//System.out.println(yPos);
-		fitness += maxHeight;
-		fitness += LI.i_point/100; 					//plus how many points are earned
-		//fitness += (5000-LI.timer)/100.0;  			//+ how long mario survies/100
-		
 		return fitness;
 		
 	}
