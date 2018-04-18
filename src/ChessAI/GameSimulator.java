@@ -685,7 +685,7 @@ public class GameSimulator {
 	
 	public int[][][] ReplaceMatrix(int[][][] Matrices, int[][] Matrix, int Index) {
 		if (Index < Matrices.length) {
-			if ((Matrix[0].length == 8) & (Matrix[0][0].length == 8)) {
+			if ((Matrices[0].length == 8) & (Matrices[0][0].length == 8)) {
 				for (int i=0;i<8;i++) {
 					for (int j=0;j<8;j++) {
 						Matrices[Index][i][j] = Matrix[i][j];
