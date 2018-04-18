@@ -18,8 +18,10 @@ public class ChessSampleTrainer extends NEAT{
 	ArrayList<ArrayList<Double>> view = new ArrayList<ArrayList<Double>>();
 	ArrayList<ArrayList<Integer>> output = new ArrayList<ArrayList<Integer>>(); //[i][up,down,left,right,a,b]
 
+	ArrayList<Integer> rank = new ArrayList<Integer>();
 	double sampleFitnessThreshold = 1.0;
 	static GameSimulator game = new GameSimulator();
+	Boolean finSample = false;
 	
 	public ArrayList<Integer> GenerateArrayList(int[][] Board, int[][]SimulateBoard, int Player){
 		ArrayList<Integer> input = new ArrayList<Integer>();
@@ -35,137 +37,27 @@ public class ChessSampleTrainer extends NEAT{
 		}
 		input.add(Player);
 		return(input);
-	}
-	
-	public int RunGame(NEATNetwork NN1, NEATNetwork NN2) {
-		// TODO Auto-generated method stub
-				GameSimulator NewGame = new GameSimulator();
-				NewGame.Initialization();
-				NewGame.DisplayMatrixInConsole(NewGame.GetBoard());
-
-				//8x8 matrix stores game board in current round
-				int[][] CurrentBoard;
-				// 8x8 matrix stores game board in previous round
-				int[][] CurrentPrevBoard;
-				//1x4 array stores Other player's move in previous round
-				//Original X, Original Y, Destination X, Destination Y
-				int[] PrevMove;
-				//2xn matrix stores coordinates of available chesses left on the game board
-				int[][] AvailableChess;
-				int ChessOrgX;
-				int ChessOrgY;
-				int ChessDesX;
-				int ChessDesY;
-				int[][][] MoveListSimulation = new int[1][8][8];
-				NEATNetwork NN;
-				int CurrentPlayer;
-				int[][] AvailChess;
-				int[][] MoveList;
-				int GameRoundCounter = 0;
-				int[][] CurrentMoveMatrix;
-				int[][] SimulateBoard;
-				
-				while (!NewGame.DeathCheck()) {
-					System.out.println("Game Round: " + Integer.toString(GameRoundCounter));
-					System.out.println("Current Game Board:");
-					NewGame.DisplayMatrixInConsole(NewGame.GetBoard());
-					CurrentBoard = NewGame.GetBoard();
-					
-//					Scanner reader = new Scanner(System.in);
-								
-//					ChessOrgX = reader.nextInt();
-//					ChessOrgY = reader.nextInt();
-//					System.out.println("Display The Move Matrix:");
-//					NewGame.DisplayMatrixInConsole(NewGame.GetMoveList(NewGame.GetBoard()[ChessOrgX][ChessOrgY], ChessOrgX, ChessOrgY));
-//
-//					ChessDesX = reader.nextInt();
-//					ChessDesY = reader.nextInt();
-//					System.out.println("Input Validality:" + NewGame.CheckMoveValidality(ChessOrgX, ChessOrgY, ChessDesX, ChessDesY));
-//					System.out.println();
-//					
-					CurrentPlayer = NewGame.GetTurn();
-					if (NewGame.GetTurn() == 1) {
-						NN = NN1;
-						
-//						MoveListSimulation = game.GenerateInput(CurrentPlayer);
-						AvailChess = NewGame.GetAvailChess(CurrentPlayer);
-						for (int i=0; i<AvailChess.length;i++) {
-							if (CurrentBoard[AvailChess[i][0]][AvailChess[i][1]] != 0) {
-								CurrentMoveMatrix = NewGame.GetMoveList(CurrentBoard[AvailChess[i][0]][AvailChess[i][1]], AvailChess[i][0], AvailChess[i][1]);
-								for (int j=0;j<8;j++) {
-									for (int k=0;k<8;k++) {
-										if (CurrentMoveMatrix[j][k] != 0) {
-											SimulateBoard = NewGame.SimulateMove(CurrentPlayer, AvailChess[i][0], AvailChess[i][1], j, k);
-										}
-									}
-								}
-							}
-						}
-						for GetAvailChess
-						for(int i=0; i<inputs.size(); i++){						//set the value for each input node
-							NN.getInputNodes().get(i).setInput(inputs.get(i));
-						}
-						
-						
-						if(NN1.getOutputNodes().get(i).checkFired())
-							LI.outputs[i] = 1;
-						System.out.println("Who's Turn: " + Integer.toString(NewGame.GetTurn()));
-						
-						
-						
-
-						System.out.println(NewGame.CheckMoveValidality(ChessOrgX, ChessOrgY, ChessDesX, ChessDesY));
-						//Player 1 Turn
-						System.out.println("Player 1 is moving the chess...");
-						if (NewGame.Move(CurrentPlayer, ChessOrgX, ChessOrgY, ChessDesX, ChessDesY)) {
-							GameRoundCounter += 1;
-						}
-					}
-					else {
-						//Player 2 Turn
-						System.out.println("Player 2 is moving the chess...");
-						if (NewGame.Move(2, ChessOrgX, ChessOrgY, ChessDesX, ChessDesY)) {
-							GameRoundCounter += 1;
-						}
-					}
-					System.out.println("\n\n\n");
-				}
-	}
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
+	}	
 	
 	public ChessSampleTrainer() throws IOException{
 		super(128, 1);
 		
-		SwingUtilities.invokeLater(new Runnable() {
-			public void run(){
-//				try{
-//					GNF = new GUINetworkFrame();
-//					GNF.addKeyListener(new inputHandler());
-//					GNF.setVisible(true);
-//				}
-//				catch(Exception e){
-//					e.printStackTrace();
-//				}
-			}		
-		});
+//		SwingUtilities.invokeLater(new Runnable() {
+//			public void run(){
+////				try{
+////					GNF = new GUINetworkFrame();
+////					GNF.addKeyListener(new inputHandler());
+////					GNF.setVisible(true);
+////				}
+////				catch(Exception e){
+////					e.printStackTrace();
+////				}
+//			}		
+//		});
 		
-		game.DisplayMatrixInConsole(game.GetBoard());
+//		game.DisplayMatrixInConsole(game.GetBoard());
 		
-		parallelExecution = true;	//initially we can run parallelExecution on sampleFitness		
+//		parallelExecution = true;	//initially we can run parallelExecution on sampleFitness		
 		
 		/*JFrame f = new JFrame();
 		f.addKeyListener(new inputHandler());
@@ -176,91 +68,136 @@ public class ChessSampleTrainer extends NEAT{
 //		ArrayList<Double> inputs = LI.getSmallInputs();
 		
 		
-		try{
-			Thread.sleep(500);										//wait 500ms
-		}catch(InterruptedException e){
-			e.printStackTrace();
-		}
-				
+//		try{
+//			Thread.sleep(500);										//wait 500ms
+//		}catch(InterruptedException e){
+//			e.printStackTrace();
+//		}
 		
-		view.add(inputs);
-		
-		ArrayList<Integer> outputs = new ArrayList<Integer>();
-		for(Integer x : LI.outputs)
-			outputs.add(x);
-		
-		output.add(outputs);
+		this.runGeneration();
+	}
+	
+	public int RunGame(NEATNetwork NN1, NEATNetwork NN2) {
+		// TODO Auto-generated method stub
+		GameSimulator NewGame = new GameSimulator();
+		NewGame.Initialization();
+		NewGame.DisplayMatrixInConsole(NewGame.GetBoard());
 
-		int frameCounter = 0;
-		while(LI.deathFlag == 0){
-			if(resetFlag){				//reset game if flag is set
-				LI.startNewGame();
-				resetFlag = false;
-			}
+		//8x8 matrix stores game board in current round
+		int[][] CurrentBoard;
+		// 8x8 matrix stores game board in previous round
+//		int[][] CurrentPrevBoard;
+		//1x4 array stores Other player's move in previous round
+		//Original X, Original Y, Destination X, Destination Y
+//		int[] PrevMove;
+		//2xn matrix stores coordinates of available chesses left on the game board
+//		int[][] AvailableChess;
+//		int ChessOrgX;
+//		int ChessOrgY;
+//		int ChessDesX;
+//		int ChessDesY;
+//		int[][][] MoveListSimulation = new int[1][8][8];
+		NEATNetwork NN;
+		int CurrentPlayer;
+		int[][] AvailChess;
+//		int[][] MoveList;
+		int GameRoundCounter = 0;
+		int[][] CurrentMoveMatrix;
+		int[][] SimulateBoard;
+		ArrayList<Integer> inputs = new ArrayList<Integer>();
+//		ArrayList<Integer> outputs = new ArrayList<Integer>();
+		int Winner;
+		
+		while (!NewGame.DeathCheck()) {
+			System.out.println("Game Round: " + Integer.toString(GameRoundCounter));
+			System.out.println("Current Game Board:");
+			NewGame.DisplayMatrixInConsole(NewGame.GetBoard());
+			CurrentBoard = NewGame.GetBoard();
 			
-			LI.updateInputs();
-			LI.writeOutputs();										//write outputs to LUA
 			
-			inputs = LI.getSmallInputs();/*
-			System.out.println("View: " + view.size());
-			System.out.println("Out: " + output.size());*/
-			Boolean changed = false;
-			for(int i=0; i<inputs.size(); i++){
-				if(!inputs.get(i).equals(view.get(view.size()-1).get(i))){	//if a single input is differet then the frame has changed
-					frameCounter++;
-					view.add(inputs);
-					
-					outputs = new ArrayList<Integer>();
-					for(Integer j : LI.outputs)
-						outputs.add(j);
-					
-					output.add(outputs);
-					changed = true;
-					//System.out.println("FRAME CHANGED!\n");
-					break;	//break as conditions loop was checking for have been met
-				}
-			}
-			//this is for when you enter a frame holding a key but you want to leave the frame by holding a different set of keys
-			if(!changed){								//if the frame hasn't changed
-				for(int j=0; j<outputs.size(); j++){	//compare each of the outputs to each of the outputs in the last element of output
-					if(output.get(output.size()-1).get(j) != LI.outputs[j]){	//if a single output has changed
-						output.remove(output.size()-1);							//remove the last entry in output
-																				//note don't remove and re-add view as it hasn't changed
-						ArrayList<Integer> newOutputs = new ArrayList<Integer>();						//re-add the updated outputs
-						for(Integer k : LI.outputs)
-							newOutputs.add(k);
+//					Scanner reader = new Scanner(System.in);
 						
-						output.add(newOutputs);
-						//System.out.println("UPDATED NEW OUTPUTS");
-						break;
+//					ChessOrgX = reader.nextInt();
+//					ChessOrgY = reader.nextInt();
+//					System.out.println("Display The Move Matrix:");
+//					NewGame.DisplayMatrixInConsole(NewGame.GetMoveList(NewGame.GetBoard()[ChessOrgX][ChessOrgY], ChessOrgX, ChessOrgY));
+//
+//					ChessDesX = reader.nextInt();
+//					ChessDesY = reader.nextInt();
+//					System.out.println("Input Validality:" + NewGame.CheckMoveValidality(ChessOrgX, ChessOrgY, ChessDesX, ChessDesY));
+//					System.out.println();
+//					
+			CurrentPlayer = NewGame.GetTurn();
+			if (CurrentPlayer == 1) {
+				NN = NN1;
+			}
+			else {
+				NN = NN2;
+			}
+//						MoveListSimulation = game.GenerateInput(CurrentPlayer);
+			AvailChess = NewGame.GetAvailChess(CurrentPlayer);
+			for (int i=0; i<AvailChess.length;i++) {
+				if (CurrentBoard[AvailChess[i][0]][AvailChess[i][1]] != 0) {
+					CurrentMoveMatrix = NewGame.GetMoveList(CurrentBoard[AvailChess[i][0]][AvailChess[i][1]], AvailChess[i][0], AvailChess[i][1]);
+					for (int j=0;j<8;j++) {
+						for (int k=0;k<8;k++) {
+							if (CurrentMoveMatrix[j][k] != 0) {
+								SimulateBoard = NewGame.SimulateMove(CurrentPlayer, AvailChess[i][0], AvailChess[i][1], j, k);
+								inputs = GenerateArrayList(CurrentBoard, SimulateBoard, CurrentPlayer);
+								for (int m=0;m<inputs.size();m++) {
+									NN.getInputNodes().get(i).setInput(inputs.get(i));
+
+									NN.execute();
+									System.out.println("Who's Turn: " + Integer.toString(NewGame.GetTurn()));
+									System.out.println(NewGame.CheckMoveValidality(AvailChess[i][0], AvailChess[i][1], j, k));
+									System.out.println("Player is moving the chess...");
+
+									if (NN1.getOutputNodes().get(0).checkFired()) {
+										if (NewGame.Move(CurrentPlayer, AvailChess[i][0], AvailChess[i][1], j, k)) {
+											GameRoundCounter += 1;
+										}
+									}
+								}
+							}
+						}
 					}
 				}
 			}
+			System.out.println("\n\n\n");
 		}
-
-		System.out.println("View Size: " + view.size());
-		int i=0;
-		int j=0;
-		for(ArrayList<Double> ad : view){
-			for(Double d : ad){
-				System.out.print(d.intValue());
-				i++;
-				if(i%LI.getViewSize() == 0)
-					System.out.println();
-			}
-			System.out.println("\n\nudlrab");
-			for(Integer o : output.get(j)){
-				System.out.print(o);
-			}
-			j++;
-			System.out.println("\n_______________________");
-			i=0;
-		}
-		System.out.println("Finsihed");
-		//f.dispose();
+		Winner = NewGame.GetWinner();
+		System.out.println("The Winner is Player " + Winner);
+		return(Winner);
 	}
 	
-	Boolean finSample = false;
+	public void Build
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
 	@Override
 	public double fitness(NEATNetwork NN){
 		
