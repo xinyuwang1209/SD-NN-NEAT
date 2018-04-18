@@ -22,6 +22,7 @@ public class ChessSampleTrainer extends NEAT{
 	double sampleFitnessThreshold = 1.0;
 	static GameSimulator game = new GameSimulator();
 	Boolean finSample = false;
+	ArrayList<ArrayList<Integer>> RANK;
 	
 	public ArrayList<Integer> GenerateArrayList(int[][] Board, int[][]SimulateBoard, int Player){
 		ArrayList<Integer> input = new ArrayList<Integer>();
@@ -39,41 +40,8 @@ public class ChessSampleTrainer extends NEAT{
 		return(input);
 	}	
 	
-	public ChessSampleTrainer() throws IOException{
-		super(128, 1);
-		
-//		SwingUtilities.invokeLater(new Runnable() {
-//			public void run(){
-////				try{
-////					GNF = new GUINetworkFrame();
-////					GNF.addKeyListener(new inputHandler());
-////					GNF.setVisible(true);
-////				}
-////				catch(Exception e){
-////					e.printStackTrace();
-////				}
-//			}		
-//		});
-		
-//		game.DisplayMatrixInConsole(game.GetBoard());
-		
-//		parallelExecution = true;	//initially we can run parallelExecution on sampleFitness		
-		
-		/*JFrame f = new JFrame();
-		f.addKeyListener(new inputHandler());
-		f.setVisible(true);*/
-
-//		LI.startNewGame();
-//		LI.updateInputs();											//load inputs
-//		ArrayList<Double> inputs = LI.getSmallInputs();
-		
-		
-//		try{
-//			Thread.sleep(500);										//wait 500ms
-//		}catch(InterruptedException e){
-//			e.printStackTrace();
-//		}
-		
+	public ChessSampleTrainer() throws IOException, InterruptedException{
+		super(128, 1);	
 		this.runGeneration();
 	}
 	
@@ -170,28 +138,57 @@ public class ChessSampleTrainer extends NEAT{
 		return(Winner);
 	}
 	
-	public void Build
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
+	public void BuildRank() {
+		// Assuming population size is 100 The code implemented here is desgined for flexible population.
+		int PopulationSize = population.get(0).size();
+		int Level = 0;
+		int Divider = (int) Math.floor(PopulationSize/2);
+		ArrayList<ArrayList<Integer>> NewRank = new ArrayList<ArrayList<Integer>>();
+		int CurrentPlayersSize;
+		int j;
+		int Winner;
+		ArrayList<Integer> NewPlayers = new ArrayList<Integer>();
+		ArrayList<Integer> CurrentLevelRank;
+		ArrayList<Integer> Players = new ArrayList<Integer>();
+		for (int i=0;i<PopulationSize;i++) {
+			Players.add(i);
+		}
+		CurrentPlayersSize = Players.size();
+		while (CurrentPlayersSize > 1) {
+			CurrentLevelRank = new ArrayList<Integer>();
+			NewPlayers = new ArrayList<Integer>();
+			Divider = (int) Math.floor(CurrentPlayersSize/2);
+			for (int i=0;i<Divider;i++) {
+				if ((Level % 2) == 0) {
+					j = i;	
+					if ((PopulationSize % 2) == 1) {
+						NewPlayers.add(Players.get(CurrentPlayersSize-i));
+					}
+				}
+				else {
+					Divider = 0 - Divider;
+					j = PopulationSize - 1 - i;
+					if ((PopulationSize % 2) == 1) {
+						NewPlayers.add(Players.get(0));
+					}
+				}
+				Winner = RunGame(population.get(0).getPopulation().get(Players.get(j)),population.get(0).getPopulation().get(Players.get(j+Divider)));
+				if (Winner == 1) {
+					NewPlayers.add(j);
+					CurrentLevelRank.add(j+Divider);
+				}
+				else {
+					NewPlayers.add(j+Divider);
+					CurrentLevelRank.add(j);
+				}
+			}
+			CurrentPlayersSize = Players.size();
+			NewRank.add(CurrentLevelRank);
+		}
+		
+		RANK = NewRank;
+		return;
+	}
 	
 	
 	
@@ -200,82 +197,15 @@ public class ChessSampleTrainer extends NEAT{
 	
 	@Override
 	public double fitness(NEATNetwork NN){
-		
+		BuildRank();
 //		Play tournemnt
 		double maxFitness = 0;
-		for(Species s : population)
-			if(s.getMaxFitness() > maxFitness)
+		for(Species s : population) {
+			if(s.getMaxFitness() > maxFitness) {
 				maxFitness = s.getMaxFitness();
-		
-		
-		if((maxFitness >= sampleFitnessThreshold && !finSample) || (!runSampleGenerationFlag && !finSample)){
-			System.out.println("PING PING PING ");
-			//we've finished with the sample so next execution we'll run the game fitness
-			parallelExecution = false;			//running on the emulator so only one execution at a time
-			finSample = true;
-			removeNonMaxSpecies();
-		}
-		
-		if(maxFitness < sampleFitnessThreshold && runSampleGenerationFlag)
-			return sampleFitness(NN);
-		else
-			return gameFitness(NN);
-	}
-	
-	public void removeNonMaxSpecies(){
-		double maxFitness = 0;
-		for(Species s : population)
-			if(s.getMaxFitness() > maxFitness)
-				maxFitness = s.getMaxFitness();
-		
-		for(int i=0; i<population.size(); i++){
-			if(population.get(i).getMaxFitness() != maxFitness){
-				population.remove(i);
-				i--;
 			}
 		}
 	}
-	
-	
-	public double sampleFitness(NEATNetwork NN){
-		while(pauseFlag){	//busy waiting while paused
-			try{
-				Thread.sleep(1000);
-			}catch(InterruptedException e){
-				e.printStackTrace();
-			}
-		}
-		
-		double fitness = 0;
-		
-		
-		
-		
-		for(int i=0; i<view.size(); i++){	//for each saved frame in view
-			
-			for(int j=0; j<view.get(i).size(); j++){	//for each input node set it equal to the corresponding int from the frame
-				NN.getInputNodes().get(j).setInput(view.get(i).get(j));
-			}
-			
-			NN.execute();
-			
-			Boolean match = true;
-			for(int o=0; o<NN.getOutputNodes().size(); o++){
-				if(NN.getOutputNodes().get(o).checkFired() && output.get(i).get(o) != 1)
-					match = false;
-				if(!NN.getOutputNodes().get(o).checkFired() && output.get(i).get(o) == 1)
-					match = false;
-			}
-			
-			if(match)
-				fitness++;
-			/*else
-				break;		//Only reward sequential success.
-*/		}
-
-		return fitness/view.size();
-	}
-	
 	
 	public double gameFitness(NEATNetwork NN){
 		LI.startNewGame();
@@ -333,64 +263,6 @@ public class ChessSampleTrainer extends NEAT{
 		//fitness += (5000-LI.timer)/100.0;  			//+ how long mario survies/100
 		
 		return fitness;
-	}
-	
-	private class inputHandler implements KeyListener{
-		@Override
-		public void keyTyped(KeyEvent e){
-			//System.out.println("HERE");
-		}
-
-		@Override
-		public synchronized void keyPressed(KeyEvent e){	//up,down,left,right,a,b
-			int key = e.getKeyCode();
-			
-			if(key == KeyEvent.VK_UP)
-				LI.outputs[0] = 1;
-			if(key == KeyEvent.VK_DOWN)
-				LI.outputs[1] = 1;
-			if(key == KeyEvent.VK_LEFT)
-				LI.outputs[2] = 1;
-			if(key == KeyEvent.VK_RIGHT)
-				LI.outputs[3] = 1;
-			if(key == KeyEvent.VK_A)
-				LI.outputs[4] = 1;
-			if(key == KeyEvent.VK_B)
-				LI.outputs[5] = 1;
-			
-			if(key == KeyEvent.VK_Q)				//press "Q" to reset the game while providing user training input
-				resetFlag = true;
-			
-			if(key == KeyEvent.VK_O)				//press "P" to pause training
-				pauseFlag = true;
-			
-			if(key == KeyEvent.VK_P)				//press "P" to resume training
-				pauseFlag = false;
-			
-			if(key == KeyEvent.VK_W){				//press "W" to end training generations and proceed to game training
-				runSampleGenerationFlag = false;
-				System.out.println("ENDING TRAINING GENERATION");
-			}
-				
-		}
-
-		@Override
-		public synchronized void keyReleased(KeyEvent e){
-			int key = e.getKeyCode();
-			
-			if(key == KeyEvent.VK_UP)
-				LI.outputs[0] = 0;
-			if(key == KeyEvent.VK_DOWN)
-				LI.outputs[1] = 0;
-			if(key == KeyEvent.VK_LEFT)
-				LI.outputs[2] = 0;
-			if(key == KeyEvent.VK_RIGHT)
-				LI.outputs[3] = 0;
-			if(key == KeyEvent.VK_A)
-				LI.outputs[4] = 0;
-			if(key == KeyEvent.VK_B)
-				LI.outputs[5] = 0;
-		}
 		
 	}
 
