@@ -582,21 +582,21 @@ public class GameSimulator {
 	
 	public int[][] SimulateMove(int Player, int ChessOrgX, int ChessOrgY, int ChessDesX, int ChessDesY) {
 		int[][] OutputBoard = new int[8][8];
-		System.out.println("Trying to move Chess...");
+//		System.out.println("Trying to move Chess...");
 		int[][] TempPrevBoard = CloneBoard(PrevBoard);
 		OutputBoard = CloneBoard(Board);
 		int temp = (int) Math.signum(OutputBoard[ChessOrgX][ChessOrgY]);
-		System.out.println("Sign of targeted Chess: " + Integer.toString(temp));
+//		System.out.println("Sign of targeted Chess: " + Integer.toString(temp));
 		if (((temp == 1) & (Player == 1)) | ((temp == -1) & (Player == 2))) {
-			System.out.println("You cannot move other player's chess!");
+//			System.out.println("You cannot move other player's chess!");
 			return(OutputBoard);
 		}
 		else if (Turn != Player) {
-			System.out.println("It's not your turn to move chess!");
+//			System.out.println("It's not your turn to move chess!");
 			return(OutputBoard);
 		}
 		else {
-			System.out.println("Player Identity verified");
+//			System.out.println("Player Identity verified");
 			boolean IsMoveValid = CheckMoveValidality(ChessOrgX, ChessOrgY, ChessDesX, ChessDesY);
 			if (!IsMoveValid) {
 				return(OutputBoard);
@@ -618,7 +618,7 @@ public class GameSimulator {
 				OutputBoard[ChessDesX][ChessDesY] = OutputBoard[ChessOrgX][ChessOrgY];
 				OutputBoard[ChessOrgX][ChessOrgY] = 0;
 				
-				System.out.println("Chess Moved from (" + Integer.toString(ChessOrgX)+ ", " + Integer.toString(ChessOrgY) + ") to (" + Integer.toString(ChessDesX) + ", " + Integer.toString(ChessDesY) + ")");
+//				System.out.println("Chess Moved from (" + Integer.toString(ChessOrgX)+ ", " + Integer.toString(ChessOrgY) + ") to (" + Integer.toString(ChessDesX) + ", " + Integer.toString(ChessDesY) + ")");
 				TempPrevBoard = CloneBoard(OutputBoard);
 				if (Turn == 1) {
 					Turn = 2;
