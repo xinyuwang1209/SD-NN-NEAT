@@ -522,7 +522,7 @@ public class GameSimulator {
 						}
 					}
 				}
-				if (ChessY+i > 0) {
+				if (ChessY+i < 8) {
 					if (!HitRight) {
 						temp = (int) Math.signum(Board[ChessX][ChessY+i]);
 						if (Board[ChessX][ChessY+i] == 0) {

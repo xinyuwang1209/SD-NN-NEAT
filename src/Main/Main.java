@@ -3,10 +3,8 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
-import DKAI.DKSampleTrainer;
-import DKAI.DKTrainer;
-import DKAI.LuaInterface;
-import DKAI.WatchDir;
+import ChessAI.ChessSampleTrainer;
+import ChessAI.GameSimulator;
 import Evolution.NEAT;
 import ImageCategorizer.ImageProcessor;
 import ImageCategorizer.ImageTrainer;
@@ -29,7 +27,7 @@ public class Main {
         LI.updateInputs();*/
 		
 		
-		DKSampleTrainer test = new DKSampleTrainer();
+		ChessSampleTrainer test = new ChessSampleTrainer();
 		while(true)
 			test.runGeneration();
 		

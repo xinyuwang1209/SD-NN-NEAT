@@ -24,6 +24,11 @@ public class ChessSampleTrainer extends NEAT{
 	Boolean finSample = false;
 	ArrayList<ArrayList<Integer>> RANK;
 	
+	public ChessSampleTrainer() throws IOException, InterruptedException{
+		super(128, 1);	
+		this.runGeneration();
+	}
+	
 	public ArrayList<Integer> GenerateArrayList(int[][] Board, int[][]SimulateBoard, int Player){
 		ArrayList<Integer> input = new ArrayList<Integer>();
 		for (int i=0;i<8;i++) {
@@ -40,10 +45,6 @@ public class ChessSampleTrainer extends NEAT{
 		return(input);
 	}	
 	
-	public ChessSampleTrainer() throws IOException, InterruptedException{
-		super(128, 1);	
-		this.runGeneration();
-	}
 	
 	public int RunGame(NEATNetwork NN1, NEATNetwork NN2) {
 		// TODO Auto-generated method stub
@@ -162,7 +163,9 @@ public class ChessSampleTrainer extends NEAT{
 				if ((Level % 2) == 0) {
 					j = i;	
 					if ((PopulationSize % 2) == 1) {
-						NewPlayers.add(Players.get(CurrentPlayersSize-i));
+//						System.out.println("Testing: " + CurrentPlayersSize);
+//						System.out.println(Players.size());
+						NewPlayers.add(Players.get(CurrentPlayersSize-1));
 					}
 				}
 				else {
