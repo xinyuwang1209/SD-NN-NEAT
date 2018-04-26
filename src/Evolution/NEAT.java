@@ -1,5 +1,6 @@
 package Evolution;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Random;
 
@@ -10,30 +11,54 @@ import NeuralNetwork.Layer;
 import NeuralNetwork.Node;
 import NeuralNetwork.OutputNode;
 
-public class NEAT {
+public class NEAT implements Serializable{
+	private static final long serialVersionUID = 7656062492809526801L;
 	protected static final double MUTATEWEIGHT = 0.80;				//0.8probability of changing a connection weight
 	protected static final double MUTATEWEIGHTTYPE = 0.05;			//probability of mutating uniformly or assigning a random value
-	protected static final double MUTATEADDNODE = 0.1;				//0.01probability of adding a new node
-	protected static final double MUTATEADDCONNECTION = 0.03;		//0.03probability of adding a new connection between existing nodes
+	protected static final double MUTATEADDNODE = 0.035;				//0.01probability of adding a new node
+	protected static final double MUTATEADDCONNECTION = 0.5;		//0.03probability of adding a new connection between existing nodes
 	
 	protected static final double POPULATIONFROMCROSSOVER = 0.25;	//0.25percentage of the next generations population forming from crossover
 	protected static final double MAINTAINDISBALEGENE = 0.75;		//probability that an inherited gene is disabled if it was disabled in either parent
 	protected static final double INTERSPECIESMATINGRATE = 0.005;	//probability that two different species mate	
 	
-	protected static final int MAXSTAGNENTGENERATIONS = 2000;
+	protected static final int MAXSTAGNENTGENERATIONS =	750;
 	
-	protected static final int POPULATIONSIZE = 150;
+	protected static final int POPULATIONSIZE = 100;
 	protected static final int MINIMUMSPECIESSIZE = 5;
-	
-	protected static final int MINNUMBEROFSPECIES = 3;
+	protected static final int MINNUMBEROFSPECIES = 4;
 	protected static final int MAXNUMBEROFSPECIES = 10;
+	protected static final int REPLACESTAGNANTWITHPROTOFACTOR = 5;	//Rate multipler for when to add new species when all are stagnant
 	
 	protected static final double POPULATIONELIMINATION = 0.75;
 	
 	protected static final double STEP = 0.025;
 	
+	/*protected static final double MUTATEWEIGHT = 0.80;				//0.8probability of changing a connection weight
+	protected static final double MUTATEWEIGHTTYPE = 0.05;			//probability of mutating uniformly or assigning a random value
+	protected static final double MUTATEADDNODE = 0.05;				//0.01probability of adding a new node
+	protected static final double MUTATEADDCONNECTION = 0.5;		//0.03probability of adding a new connection between existing nodes
+	
+	protected static final double POPULATIONFROMCROSSOVER = 0.25;	//0.25percentage of the next generations population forming from crossover
+	protected static final double MAINTAINDISBALEGENE = 0.75;		//probability that an inherited gene is disabled if it was disabled in either parent
+	protected static final double INTERSPECIESMATINGRATE = 0.005;	//probability that two different species mate	
+	
+	protected static final int MAXSTAGNENTGENERATIONS =	250;
+	
+	protected static final int POPULATIONSIZE = 100;
+	protected static final int MINIMUMSPECIESSIZE = 5;
+	protected static final int MINNUMBEROFSPECIES = 4;
+	protected static final int MAXNUMBEROFSPECIES = 10;
+	protected static final int REPLACESTAGNANTWITHPROTOFACTOR = 100;	//Rate multipler for when to add new species when all are stagnant
+	
+	protected static final double POPULATIONELIMINATION = 0.75;
+	
+	protected static final double STEP = 0.025;*/
+
+	protected int numInputNodes;
+	protected int numOutputNodes;
 	protected static int innovationNumber = 1;
-	protected static int nodeNumber = 1;
+	protected int nodeNumber = 1;
 	protected ArrayList<Species> population = new ArrayList<Species>();
 	protected int speciesCount = 0;			//count number of active species
 	protected int speciesIDCount = 0;		//unqiue ID for species 
@@ -41,9 +66,17 @@ public class NEAT {
 	
 	protected boolean parallelExecution = false;	//set true in child class if the current fitness execution can be ran in parrallel
 	
+	
 	public NEAT(int numInputNodes, int numOutputNodes){	
+		this.numInputNodes = numInputNodes;
+		this.numOutputNodes = numOutputNodes;
+		addProtoSpecies(POPULATIONSIZE);
+	}
+	
+	private void addProtoSpecies(int popSize){
+		//System.out.println("popSize: " + popSize);
 		population.add(new Species(speciesIDCount++));
-		for(int i=0; i< POPULATIONSIZE; i++){							//initialize the Population
+		for(int i=0; i< popSize; i++){							//initialize the Population
 			InputNode[] inputNodes = new InputNode[numInputNodes];		//create new instances for each NN of populaton
 			OutputNode[] outputNodes = new OutputNode[numOutputNodes];
 			for(int x=0; x<numInputNodes; x++){
@@ -56,13 +89,14 @@ public class NEAT {
 			}
 			
 			NEATNetwork NN = new NEATNetwork(inputNodes, outputNodes);
-			population.get(0).add(NN);								//initialize the speciesList
-			population.get(0).setFirstNN(NN);
+			population.get(population.size()-1).add(NN);									//initialize the speciesList
+			population.get(population.size()-1).setFirstNN(NN);
 		}
-		speciesCount++;
 	}
 	
+	protected boolean parallelExecuteRunningFlag = false;											//flag to indicate that parallel processing has yet to complete
 	public void execute() throws InterruptedException{
+		updateParallelExecution();	//check if we want to execute tests in parallel
 		System.out.println("parallelExecution: "  + parallelExecution);
 		if(!parallelExecution){
 			for(Species s : population){																	//run each NN and update their fitness
@@ -71,6 +105,7 @@ public class NEAT {
 				}
 			}
 		}else{
+			parallelExecuteRunningFlag = true;
 			ArrayList<Thread> threadList = new ArrayList<Thread>();
 			for(Species s : population){																	//run each NN and update their fitness
 				for(NEATNetwork NN : s.getPopulation()){
@@ -87,9 +122,28 @@ public class NEAT {
 				t.start();
 			for(Thread t : threadList)			//wait for all of the threads to finish
 				t.join();	
+			parallelExecuteRunningFlag = false;
 		}
 	}
-
+	
+	public void updateParallelExecution(){	//default to parallelExecution
+		parallelExecution = true;
+	}
+	
+	private int removeWeakestSpecies(){
+		int weakestSpeciesIndex = 0;
+		int eliminated = 0;
+		
+		for(int x=0; x<population.size(); x++)
+			if(population.get(x).getMaxFitness() < population.get(weakestSpeciesIndex).getMaxFitness())
+				weakestSpeciesIndex = x;
+		
+		eliminated += population.get(weakestSpeciesIndex).getPopulation().size();
+		population.remove(weakestSpeciesIndex);
+		weakestSpeciesIndex = 0;																	//reset index
+		
+		return eliminated;
+	}
 	
 	public void runGeneration() throws InterruptedException{
 		//check and calculate if any of the population is missing b4 the generation is ran.
@@ -109,16 +163,29 @@ public class NEAT {
 		//ELIMINATE_____________________________________________________________________________________________________________________________
 		int eliminate = (int) (POPULATIONSIZE*POPULATIONELIMINATION);									//number of NN to elimate
 		int eliminated = 0;
-		int weakestSpeciesIndex = 0;
 		
 		//Eliminate stagnant species
+		if(population.size() <= MINNUMBEROFSPECIES){													
+			boolean atleastOneNonStagnantSpecies = false;
+			for(int i=0; i<population.size(); i++){
+				Species sTemp = population.get(i);	
+				if(sTemp.getGenerationsWithoutImprovement() < MAXSTAGNENTGENERATIONS*REPLACESTAGNANTWITHPROTOFACTOR)
+					atleastOneNonStagnantSpecies = true;
+			}
+			if(!atleastOneNonStagnantSpecies){														//if every species is stagnant and were at the minimum number of species
+				addProtoSpecies(removeWeakestSpecies());											//remove the weakest species and add new protoSpecies with the same population size														
+				//System.out.println("Removed weakest and added ProtoSpecies");
+				//Thread.sleep(2000);
+			}
+		}																							//thought processes is to get something fresh to build up from if we become too stagnant
+		
 		for(int i=0; i<population.size(); i++){
 			Species s = population.get(i);	
 			Boolean stagnant = false;				
 			
 			
 			if(s.getGenerationsWithoutImprovement() >= MAXSTAGNENTGENERATIONS)
-				stagnant = true;
+				stagnant = true;	
 			
 			if(population.size() <= MINNUMBEROFSPECIES)												//if there exists less than the minimum number of species don't kill of stagnant ones
 				break;
@@ -139,15 +206,8 @@ public class NEAT {
 		}
 		
 		//Eliminate excess species
-		while(population.size() >= MAXNUMBEROFSPECIES){													//if we have too many species eliminate the lowest performers
-			for(int x=0; x<population.size(); x++)
-				if(population.get(x).getMaxFitness() < population.get(weakestSpeciesIndex).getMaxFitness())
-					weakestSpeciesIndex = x;
-			
-			eliminated += population.get(weakestSpeciesIndex).getPopulation().size();
-			population.remove(weakestSpeciesIndex);
-			weakestSpeciesIndex = 0;																	//reset index
-		}
+		while(population.size() >= MAXNUMBEROFSPECIES)
+			eliminated += removeWeakestSpecies();														//if we have too many species eliminate the lowest performers
 		
 		//eliminate from species the remaining required
 		double percentFromEachPopulationToEliminate = (POPULATIONELIMINATION)*((eliminate-eliminated)/((double)eliminate));
@@ -288,14 +348,16 @@ public class NEAT {
 		for(Species s : population){																	//update stagnant count for each species
 			Boolean reset = false;
 			for(NEATNetwork NN : s.getPopulation()){
+				//System.out.println("NUMBER OF HIDDEN LAYERS: " + NN.getHiddenLayers().size());
 				if(NN.getCurrentFitness() > s.getMaxFitness()){
 					s.resetGenerationsWithoutImprovement();
-					s.updateMaxFitness();																//update the species max fitness
 					reset = true;
 				}
 			}
 			if(!reset)																					//if the generations w/o improvement counter wasn't reset increment it
 				s.incGenerationsWithoutImprovement();
+			//System.out.println("SPECIES ID: " + s);
+			s.updateMaxFitness();																		//update the species max fitness
 		}
 		
 		
@@ -484,7 +546,9 @@ public class NEAT {
 						cg.toogleEnable();
 	    }
 	}
-		
+	
+	
+	
 	private void crossOverAddNodeGenes(NEATNetwork NN, NEATNetwork nn, ConnectGene cg, Boolean n1Repeat, Boolean n2Repeat){
 		for(NodeGene ng : nn.getNodeGeneList()){			//add nodeGenes
 			if(ng.getNode().getID() == cg.getInNode().getID() && !n1Repeat){
@@ -570,8 +634,42 @@ public class NEAT {
 					NN.addNodeBetween(n, cg.getEdge().getNode1(), cg.getEdge().getNode2());
 				}
 				
-																	
-				for(NodeGene ng1 : hng){					
+				
+				NodeGene ng1 = hng.get((int)(hng.size()*Math.random()));
+				if(!(ng1.getNode() instanceof OutputNode) && MUTATEADDCONNECTION >= Math.random()){		//add new connections on node ng1 with probability MutateAddConnection
+					NodeGene ng2;
+					while(true){																		//randomly select a valid node to connect to
+						ng2 = hng.get((int)(Math.random()*hng.size()));
+						if(ng1.equals(ng2))																//reccurent connections not allowed so skip
+							continue;
+						if(ng1.getNode() instanceof OutputNode)											//OutputNodes don't have outGoingEdges so skip
+							continue;
+						if(ng1.getNode() instanceof InputNode && ng2.getNode() instanceof InputNode)	//no connection between input nodes
+							continue;
+						if(ng1.getNode() instanceof HiddenNode && ng2.getNode() instanceof InputNode)	//hidden nodes can't connect back to input nodes (hidden -> input) is bad (input -> hidden) is ok
+							continue;
+						
+						if(ng1.getNode() instanceof HiddenNode && ng2.getNode() instanceof HiddenNode)	//nodes can't connect to nodes in a lower layer
+							if(NN.getHiddenNodeLayerDepth((HiddenNode)ng1.getNode()) >= NN.getHiddenNodeLayerDepth((HiddenNode)ng2.getNode()))
+								continue;
+						break;
+					}
+	
+					Boolean preExistingConnection = false;												//if n1 -> n2 don't add another connection
+					for(Edge e : ng1.getNode().getOutgoingEdges()){
+						if(e.getNode2().equals(ng2.getNode())){
+							preExistingConnection = true;
+							break;
+						}
+					}
+					
+					if(!preExistingConnection)															//else add connection between n1 and n2
+						NN.addConnection(ng1.getNode(), ng2.getNode());
+				}
+				
+				
+				
+				/*for(NodeGene ng1 : hng){					
 					if(ng1.getNode() instanceof OutputNode)													//can't add an outgoing connection to an outputnode
 						continue;
 					
@@ -605,7 +703,8 @@ public class NEAT {
 						if(!preExistingConnection)															//else add connection between n1 and n2
 							NN.addConnection(ng1.getNode(), ng2.getNode());
 					}
-				}
+				}*/
+				
 				/*for(NodeGene ng1 : hng){																//add new connections between nodes
 					for(NodeGene ng2 : hng){															//check if every node already connects to every other node
 						if(ng1.equals(ng2))																//reccurent connections not allowed so skip
@@ -668,7 +767,11 @@ public class NEAT {
 		if(numberOfMatchingGenes != 0)
 			w = w/numberOfMatchingGenes;
 		
-		return 3 <= ((c1*E)/N) + ((c2*D)/N) + (c3*w);	//return true is S >= 3
+		double c4 = 0.25;
+		double depthDifference = Math.abs(n1.getHiddenLayers().size() - n2.getHiddenLayers().size());
+		
+		//return 3 <= ((c1*E)/N) + ((c2*D)/N) + (c3*w);	//return true is S >= 3
+		return 4 <= ((c1*E)/N) + ((c2*D)/N) + (c3*w) + (c4*depthDifference);	//return true is S >= 3
 	}
 	
 	private int numDisjointGenes(NEATNetwork n1, NEATNetwork n2){

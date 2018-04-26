@@ -1,10 +1,12 @@
 package Evolution;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 
-public class Species{
+public class Species implements Serializable{
+	private static final long serialVersionUID = 654671414538912506L;
 	int generationsWithoutImprovement = 0;
 	double maxFitness = 0;
 	NEATNetwork firstNN;
@@ -37,6 +39,8 @@ public class Species{
 	}
 	
 	public void add(NEATNetwork nn){
+		if(population.size() == 0)
+			firstNN = nn;
 		population.add(nn);
 	}
 	
@@ -86,9 +90,14 @@ public class Species{
 	}
 	
 	public void updateMaxFitness(){
-		for(NEATNetwork NN : population)
-			if(maxFitness < NN.getCurrentFitness())
-				maxFitness = NN.getCurrentFitness();
+		double tempMaxFitness = -Double.MAX_VALUE;
+		for(NEATNetwork NN : population){
+			//System.out.println("ID: " + NN + "NN CURRENT FITNESS WHILE UPDATEING: " + NN.getCurrentFitness());
+			if(tempMaxFitness < NN.getCurrentFitness())
+				tempMaxFitness = NN.getCurrentFitness();
+		}
+		maxFitness = tempMaxFitness;
+		//System.out.println("maxFitness: " + maxFitness);
 	}
 	
 	public ArrayList<NEATNetwork> getPopulation(){

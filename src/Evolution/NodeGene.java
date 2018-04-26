@@ -1,8 +1,12 @@
 package Evolution;
 
+import java.io.Serializable;
+
 import NeuralNetwork.Node;
 
-public class NodeGene {
+public class NodeGene implements Serializable{
+	private static final long serialVersionUID = -3484116647023789024L;
+
 	enum NodeType{
 		SENSOR, HIDDEN, OUTPUT
 	}

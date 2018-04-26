@@ -1,9 +1,12 @@
 package Evolution;
 
+import java.io.Serializable;
+
 import NeuralNetwork.Edge;
 import NeuralNetwork.Node;
 
-public class ConnectGene {
+public class ConnectGene implements Serializable{
+	private static final long serialVersionUID = 2556047332619746551L;
 	Node inNode;
 	Node outNode;
 	Edge edge;

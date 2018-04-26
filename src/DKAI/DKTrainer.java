@@ -7,7 +7,7 @@ import Evolution.NEAT;
 import Evolution.NEATNetwork;
 
 public class DKTrainer extends NEAT{
-	static LuaInterface LI = new LuaInterface("./src/res/LUA.txt", "./src/res/Java.txt");
+	static LuaInterface LI = new LuaInterface("./src/res/LUA.txt");
 	
 	public DKTrainer() throws IOException {
 		super(LI.getSmallInputs().size(), 6);

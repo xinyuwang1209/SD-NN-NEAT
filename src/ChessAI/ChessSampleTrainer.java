@@ -2,6 +2,7 @@ package ChessAI;
 
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Scanner;
@@ -12,8 +13,12 @@ import javax.swing.SwingUtilities;
 import Evolution.NEAT;
 import Evolution.NEATNetwork;
 import Evolution.Species;
+import Evolution.Store;
+import NEAT_GUI.GUINetworkFrame;
 
 public class ChessSampleTrainer extends NEAT{
+	
+
 
 	ArrayList<ArrayList<Double>> view = new ArrayList<ArrayList<Double>>();
 	ArrayList<ArrayList<Integer>> output = new ArrayList<ArrayList<Integer>>(); //[i][up,down,left,right,a,b]
@@ -24,9 +29,25 @@ public class ChessSampleTrainer extends NEAT{
 	Boolean finSample = false;
 	ArrayList<ArrayList<Integer>> RANK;
 	
+	private GUINetworkFrame GNF;
+	private static final int ViewSize = 128;
+	Boolean UpdateGUI = false;
+	
 	public ChessSampleTrainer() throws IOException, InterruptedException{
-		super(128, 1);	
-		this.runGeneration();
+		super(ViewSize, 1);
+		SwingUtilities.invokeLater(new Runnable() {
+			public void run(){
+				try{
+					GNF = new GUINetworkFrame();
+					GNF.addKeyListener(new inputHandler());
+					GNF.setVisible(true);
+				}
+				catch(Exception e){
+					e.printStackTrace();
+				}
+			}		
+		});
+		Thread.sleep(1000);
 	}
 	
 	public ArrayList<Integer> GenerateArrayList(int[][] Board, int[][]SimulateBoard, int Player){
@@ -50,7 +71,7 @@ public class ChessSampleTrainer extends NEAT{
 		// TODO Auto-generated method stub
 		GameSimulator NewGame = new GameSimulator();
 		NewGame.Initialization();
-		NewGame.DisplayMatrixInConsole(NewGame.GetBoard());
+		//NewGame.DisplayMatrixInConsole(NewGame.GetBoard());
 
 		//8x8 matrix stores game board in current round
 		int[][] CurrentBoard;
@@ -78,9 +99,14 @@ public class ChessSampleTrainer extends NEAT{
 		int Winner;
 		
 		while (!NewGame.DeathCheck()) {
-			System.out.println("Game Round: " + Integer.toString(GameRoundCounter));
-			System.out.println("Current Game Board:");
-			NewGame.DisplayMatrixInConsole(NewGame.GetBoard());
+			//System.out.println("Game Round: " + Integer.toString(GameRoundCounter));
+			//System.out.println("Current Game Board:");
+			//NewGame.DisplayMatrixInConsole(NewGame.GetBoard());
+			/*try {
+				Thread.sleep(10);
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}*/
 			CurrentBoard = NewGame.GetBoard();
 			
 			
@@ -97,33 +123,70 @@ public class ChessSampleTrainer extends NEAT{
 //					System.out.println();
 //					
 			CurrentPlayer = NewGame.GetTurn();
+			//System.out.println("NewGame.GetTurn(): " + NewGame.GetTurn());
 			if (CurrentPlayer == 1) {
 				NN = NN1;
+				//System.out.println("P1 turn");
 			}
 			else {
 				NN = NN2;
+				//System.out.println("P2 turn");
 			}
 //						MoveListSimulation = game.GenerateInput(CurrentPlayer);
+			
 			AvailChess = NewGame.GetAvailChess(CurrentPlayer);
+			Boolean moveTaken = false;
+			
+			/*int randomI = (int)(Math.random()*AvailChess.length);	//used to randomly start I index
 			for (int i=0; i<AvailChess.length;i++) {
+				randomI++;											//inc
+				if(!(randomI < AvailChess.length))					//wrap around
+					randomI = 0;
+				if(moveTaken)
+					break;
 				if (CurrentBoard[AvailChess[i][0]][AvailChess[i][1]] != 0) {
 					CurrentMoveMatrix = NewGame.GetMoveList(CurrentBoard[AvailChess[i][0]][AvailChess[i][1]], AvailChess[i][0], AvailChess[i][1]);
+					
+					
+					int randomJ = (int)(Math.random()*8);	//used to randomly start J index
+					int randomK = (int)(Math.random()*8);	//used to randomly start K index
 					for (int j=0;j<8;j++) {
+						randomJ++;							//inc
+						if(!(randomJ < 8))					//wrap around
+							randomJ = 0;
+						if(moveTaken)
+							break;
 						for (int k=0;k<8;k++) {
-							if (CurrentMoveMatrix[j][k] != 0) {
-								SimulateBoard = NewGame.SimulateMove(CurrentPlayer, AvailChess[i][0], AvailChess[i][1], j, k);
+							randomK++;						//inc
+							if(!(randomK < 8))				//wrap around
+								randomK = 0;
+							if(moveTaken)
+								break;
+							if (CurrentMoveMatrix[randomJ][randomK] != 0) {
+								SimulateBoard = NewGame.SimulateMove(CurrentPlayer, AvailChess[i][0], AvailChess[i][1], randomJ, randomK);
 								inputs = GenerateArrayList(CurrentBoard, SimulateBoard, CurrentPlayer);
-								for (int m=0;m<inputs.size();m++) {
-									NN.getInputNodes().get(i).setInput(inputs.get(i));
+								
+								for (int m=0;m<inputs.size()-1;m++) {
+									if(moveTaken)
+										break;
+									if(NN == NN1)													//flip nodes values such that the current players nodes are always positive
+										NN.getInputNodes().get(m).setInput(inputs.get(m));
+									if(NN == NN2)
+										NN.getInputNodes().get(m).setInput(-1*inputs.get(m));
 
 									NN.execute();
-									System.out.println("Who's Turn: " + Integer.toString(NewGame.GetTurn()));
-									System.out.println(NewGame.CheckMoveValidality(AvailChess[i][0], AvailChess[i][1], j, k));
-									System.out.println("Player is moving the chess...");
+									if(UpdateGUI)
+										GNF.updateNetwork(NN, 8);
+									//System.out.println("Who's Turn: " + Integer.toString(NewGame.GetTurn()));
+									//System.out.println(NewGame.CheckMoveValidality(AvailChess[i][0], AvailChess[i][1], j, k));
+									//System.out.println("Player is moving the chess...");
 
-									if (NN1.getOutputNodes().get(0).checkFired()) {
-										if (NewGame.Move(CurrentPlayer, AvailChess[i][0], AvailChess[i][1], j, k)) {
+									if (NN.getOutputNodes().get(0).checkFired()) {
+										if (NewGame.Move(CurrentPlayer, AvailChess[i][0], AvailChess[i][1], randomJ, randomK)) {
 											GameRoundCounter += 1;
+											moveTaken = true;
+											System.out.println("Current Game Board:");
+											NewGame.DisplayMatrixInConsole(NewGame.GetBoard());
 										}
 									}
 								}
@@ -131,17 +194,77 @@ public class ChessSampleTrainer extends NEAT{
 						}
 					}
 				}
+			}*/
+			/*if(!moveTaken){
+				while(true){
+					int i = (int)(Math.random() * AvailChess.length);
+					int j = (int)(Math.random()*8);
+					int k = (int)(Math.random()*8);
+					//System.out.println("i=" + i + " j=" + j +" k=" + k);
+					
+					CurrentMoveMatrix = NewGame.GetMoveList(CurrentBoard[AvailChess[i][0]][AvailChess[i][1]], AvailChess[i][0], AvailChess[i][1]);
+					if (CurrentMoveMatrix[j][k] != 0){
+						NewGame.Move(CurrentPlayer, AvailChess[i][0], AvailChess[i][1], j, k);
+						GameRoundCounter += 1;
+						System.out.println("Current Game Board:");
+						NewGame.DisplayMatrixInConsole(NewGame.GetBoard());
+						break;
+					}
+				}
+			}*/
+			if(!moveTaken){
+				while(true){
+					int i = (int)(Math.random() * AvailChess.length);
+					int j = (int)(Math.random()*8);
+					int k = (int)(Math.random()*8);
+					//System.out.println("i=" + i + " j=" + j +" k=" + k);
+					
+					CurrentMoveMatrix = NewGame.GetMoveList(CurrentBoard[AvailChess[i][0]][AvailChess[i][1]], AvailChess[i][0], AvailChess[i][1]);
+					if (CurrentMoveMatrix[j][k] != 0){
+						NewGame.Move(CurrentPlayer, AvailChess[i][0], AvailChess[i][1], j, k);
+						GameRoundCounter += 1;
+						/*System.out.println("Current Game Board:");
+						NewGame.DisplayMatrixInConsole(NewGame.GetBoard());*/
+						//____________________________________________________________________________
+						SimulateBoard = NewGame.SimulateMove(CurrentPlayer, AvailChess[i][0], AvailChess[i][1], j, i);
+						inputs = GenerateArrayList(CurrentBoard, SimulateBoard, CurrentPlayer);
+						for (int m=0;m<inputs.size()-1;m++){
+							if(NN == NN1)													//flip nodes values such that the current players nodes are always positive
+								NN.getInputNodes().get(m).setInput(inputs.get(m));
+							if(NN == NN2)
+								NN.getInputNodes().get(m).setInput(-1*inputs.get(m));
+						}
+						NN.execute();
+						if(UpdateGUI)
+							GNF.updateNetwork(NN, 8);
+						//____________________________________________________________________________
+						
+						break;
+					}
+				}
 			}
-			System.out.println("\n\n\n");
+			if(Math.random() > 0.95)
+				Winner = 1;
+			else
+				Winner = 2;
+			
+			//System.out.println("The Winner is Player " + Winner);
+			return(Winner);
+			//System.out.println("\n\n\n");
 		}
 		Winner = NewGame.GetWinner();
-		System.out.println("The Winner is Player " + Winner);
+		//System.out.println("The Winner is Player " + Winner);
 		return(Winner);
 	}
 	
 	public void BuildRank() {
+		ArrayList<NEATNetwork> tournamentPopulation = new ArrayList<NEATNetwork>();
+		for(Species s : population)
+			for(NEATNetwork nn : s.getPopulation())
+				tournamentPopulation.add(nn);
+		
 		// Assuming population size is 100 The code implemented here is desgined for flexible population.
-		int PopulationSize = population.get(0).size();
+		int PopulationSize = tournamentPopulation.size();
 		int Level = 0;
 		int Divider = (int) Math.floor(PopulationSize/2);
 		ArrayList<ArrayList<Integer>> NewRank = new ArrayList<ArrayList<Integer>>();
@@ -175,7 +298,8 @@ public class ChessSampleTrainer extends NEAT{
 						NewPlayers.add(Players.get(0));
 					}
 				}
-				Winner = RunGame(population.get(0).getPopulation().get(Players.get(j)),population.get(0).getPopulation().get(Players.get(j+Divider)));
+				
+				Winner = RunGame(tournamentPopulation.get(Players.get(j)),tournamentPopulation.get(Players.get(j+Divider)));
 				if (Winner == 1) {
 					NewPlayers.add(j);
 					CurrentLevelRank.add(j+Divider);
@@ -185,12 +309,17 @@ public class ChessSampleTrainer extends NEAT{
 					CurrentLevelRank.add(j);
 				}
 			}
+			Players = NewPlayers;
 			CurrentPlayersSize = Players.size();
 			NewRank.add(CurrentLevelRank);
 		}
 		
+		CurrentLevelRank = new ArrayList<Integer>();
+		CurrentLevelRank.add(Players.get(0));
+		
+		NewRank.add(CurrentLevelRank);
+		
 		RANK = NewRank;
-		return;
 	}
 	
 	
@@ -202,7 +331,10 @@ public class ChessSampleTrainer extends NEAT{
 		if(!parallelExecution){
 			for(Species s : population){																	//run each NN and update their fitness
 				for(NEATNetwork NN : s.getPopulation()){
-					NN.setCurrentFitness(fitness(NN));
+					NN.incGenerationsAlive();
+					double fitness = fitness(NN);
+					NN.setCurrentFitness(fitness);
+					//System.out.println("NN " + NN + " Set to: " + fitness);
 				}
 			}
 		}else{
@@ -229,23 +361,58 @@ public class ChessSampleTrainer extends NEAT{
 	
 	@Override
 	public double fitness(NEATNetwork NN){
+		ArrayList<NEATNetwork> tournamentPopulation = new ArrayList<NEATNetwork>();
+		for(Species s : population)
+			for(NEATNetwork nn : s.getPopulation())
+				tournamentPopulation.add(nn);
+		
 		double fitness = 0;
 		int LevelSize;
 		ArrayList<Integer> CurrentLevelRank;
 		int NNIndex;
 		for (int i=0; i<RANK.size();i++) {
-			CurrentLevelRank = RANK.get(i);
-			LevelSize = CurrentLevelRank.size();
-			for (int j=0; j<LevelSize; j++) {
+			CurrentLevelRank = RANK.get(i);	//ArrayList containing the indices to tournamentPopulation for the corresponding NN
+			for (int j=0; j<CurrentLevelRank.size(); j++) {
 				NNIndex = CurrentLevelRank.get(j);
-				if (NN == population.get(0).getPopulation().get(NNIndex)) {
-					fitness = i/RANK.size();
+				if (NN == tournamentPopulation.get(NNIndex)) {
+					//System.out.println("NN: " + NN);
+					fitness = i+1;
+					/*System.out.println("i: " + i);
+					System.out.println("Rank.size(): " + RANK.size());
+					System.out.println("NNIndex(): " + NNIndex);
+					System.out.println("WE SUCCESSFULLY DETERMINED A FITNESS: " + fitness);
+					System.out.println();*/
 				}
 			}
-			
 		}
-		return fitness;
-		
+		//System.out.println("NN ID: " + NN + " Returned Fitness: " + (NN.getCurrentFitness() + fitness)/NN.incGenerationsAlive());
+		//return (NN.getCurrentFitness() + fitness)/NN.getGenerationsAlive();	//fitness is a running average of all ranks
+		return NN.getConnectGeneList().size() + NN.getNodeGeneList().size();
 	}
 
+	private class inputHandler implements KeyListener{
+		@Override
+		public void keyTyped(KeyEvent e){
+			//System.out.println("HERE");
+		}
+
+		@Override
+		public synchronized void keyPressed(KeyEvent e){	//up,down,left,right,a,b
+			int key = e.getKeyCode();
+			
+			if(key == KeyEvent.VK_Q)
+				UpdateGUI = true;
+			if(key == KeyEvent.VK_W)
+				UpdateGUI = false;
+		}
+
+		@Override
+		public synchronized void keyReleased(KeyEvent e){
+			int key = e.getKeyCode();
+			
+			/*if(key == KeyEvent.VK_Q)
+				LI.outputs[0] = 0;*/
+		}
+		
+	}
 }

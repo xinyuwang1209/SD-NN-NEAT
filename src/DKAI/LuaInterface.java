@@ -10,7 +10,7 @@ public class LuaInterface {
 	public int[] platforms = new int[338];
 	public int[] ladders = new int[76];
 	public int[] enemies2 = new int[44];
-	public int[] enemies = new int[48];
+	public int[] enemies = new int[100];	//was 48 but updated to 100 as I'm now unsure what the maximum number of concurrent enemies can be
 	public int[] position = new int[8];
 	
 	public int deathFlag = 0;
@@ -20,18 +20,14 @@ public class LuaInterface {
 	public int outputs[] = {0,0,0,0,0,0}; //up,down,left,right,a,b
 	
 	private String luaPath;
-	private String javaPath;
 	private File luaFile;
-	private File javaFile;
 
 	private int viewSize = 7;
 	
 	
-	public LuaInterface(String lua, String java){
+	public LuaInterface(String lua){
 		luaPath = lua;
-		javaPath = java;
 		luaFile = new File(luaPath);
-		javaFile = new File(javaPath);
 	}
 	
 	public int getViewSize(){
@@ -126,7 +122,7 @@ public class LuaInterface {
 			output.add(0.0);
 		
 		//Output smalloutputs view to console
-		for(int y=0; y<viewSize; y++){
+		/*for(int y=0; y<viewSize; y++){
 			for(int x=0; x<viewSize; x++){
 				if(inputs[x][y] == 1)
 					System.out.print(1);
@@ -143,7 +139,7 @@ public class LuaInterface {
 		System.out.println(output.get(output.size()-3));
 		System.out.println(output.get(output.size()-2));
 		System.out.println(output.get(output.size()-1));
-		System.out.println("___________________________________");
+		System.out.println("___________________________________");*/
 		
 		return output;
 	}
@@ -229,6 +225,12 @@ public class LuaInterface {
 	
 	public void updateInputs(){													//load inputs and update member variables
 		try{
+			//re-initialize arrays to ensure no old data is left behind
+			platforms = new int[338];
+			ladders = new int[76];
+			enemies2 = new int[44];
+			enemies = new int[100];
+			position = new int[8];
 			
 			boolean wait = true;
 			while(wait){
@@ -237,7 +239,7 @@ public class LuaInterface {
 				if(sc.nextLine().equals("Lua=0"))	//finish waiting once lua has updated the output
 					wait = false;
 				sc.close();
-			}			
+			}
 			
 			Scanner sc = new Scanner(luaFile);
 			int i=0;
@@ -247,34 +249,38 @@ public class LuaInterface {
 				
 				if(s.equals("platforms:")){
 					i=0;
-					while(i<platforms.length){												//load platforms
-						s = sc.nextLine().replaceAll("[\\D]", "");
+					while(!s.equals("end") && sc.hasNextLine()){												//load platforms
+						s = s.replaceAll("[\\D]", "");
 						if(!s.equals("")){
 							platforms[i] = Integer.parseInt(s);
 							i++;
 						}
+						s = sc.nextLine();
 					}
 				}
 				
 				if(s.equals("ladders:")){
 					i=0;
-					while(i<ladders.length){												//load ladders
-						s = sc.nextLine().replaceAll("[\\D]", "");
+					while(!s.equals("end") && sc.hasNextLine()){												//load ladders
+						s = s.replaceAll("[\\D]", "");
 						if(!s.equals("")){
 							ladders[i] = Integer.parseInt(s);
 							i++;
 						}
+						s = sc.nextLine();
 					}
 				}
 				
-				if(s.equals("enemies2:")){
+				if(s.equals("position:")){
 					i=0;
-					while(i<enemies2.length){												//load enemies2
-						s = sc.nextLine().replaceAll("[\\D]", "");
+					while(!s.equals("end") && sc.hasNextLine()){													//load enemies
+						s = s.replaceAll("[\\D]", "");
 						if(!s.equals("")){
-							enemies2[i] = Integer.parseInt(s);
+							position[i] = Integer.parseInt(s);
+							//System.out.println("position[i]: " + position[i]);
 							i++;
 						}
+						s = sc.nextLine();
 					}
 				}
 				
@@ -282,25 +288,28 @@ public class LuaInterface {
 					deathFlag = Integer.parseInt(sc.nextLine().replaceAll("[\\D]", ""));
 				}
 				
+				if(s.equals("enemies2:")){
+					i=0;
+					while(!s.equals("end") && sc.hasNextLine()){													//load enemies
+						s = s.replaceAll("[\\D]", "");
+						if(!s.equals("")){
+							enemies2[i] = Integer.parseInt(s);
+							i++;
+						}
+
+						s = sc.nextLine();
+					}
+				}
+				
 				if(s.equals("enemies:")){
 					i=0;
-					while(i<enemies.length){												//load enemies
-						s = sc.nextLine().replaceAll("[\\D]", "");
+					while(!s.equals("end") && sc.hasNextLine()){													//load enemies
+						s = s.replaceAll("[\\D]", "");
 						if(!s.equals("")){
 							enemies[i] = Integer.parseInt(s);
 							i++;
 						}
-					}
-				}
-				if(s.equals("position:")){
-					i=0;
-					while(i<position.length){													//load enemies
-						s = sc.nextLine().replaceAll("[\\D]", "");
-						if(!s.equals("")){
-							position[i] = Integer.parseInt(s);
-							//System.out.println("position[i]: " + position[i]);
-							i++;
-						}
+						s = sc.nextLine();
 					}
 				}
 				
@@ -312,6 +321,7 @@ public class LuaInterface {
 				}
 			}
 			sc.close();
+			
 		}catch(Exception e){
 			/*System.out.println("Exception updating inputs: " + e);
 			updateInputs();

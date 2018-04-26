@@ -17,6 +17,7 @@ public class NEATNetwork extends NeuralNetwork implements Serializable{
 	ArrayList<ConnectGene> connectGeneList = new ArrayList<ConnectGene>();
 	double currentFitness = 0;
 	int highestInnovationNumber = 0;
+	int generationsAlive = 0;
 	
 	int numInputNodes = 0;
 	int numOutputNodes = 0;
@@ -47,6 +48,15 @@ public class NEATNetwork extends NeuralNetwork implements Serializable{
 			nodeGeneList.add(new NodeGene(out, NodeGene.NodeType.OUTPUT));
 			nodeNumber++;
 		}
+	}
+	
+	public int getGenerationsAlive(){
+		return generationsAlive;
+	}
+	
+	public int incGenerationsAlive(){
+		generationsAlive++;
+		return generationsAlive;
 	}
 	
 	public void sortConnectGeneList(){

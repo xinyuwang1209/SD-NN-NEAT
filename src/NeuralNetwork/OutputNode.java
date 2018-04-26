@@ -2,7 +2,7 @@ package NeuralNetwork;
 
 public class OutputNode extends Node{
 	Boolean fired = false;
-	public OutputNode(int id) {
+	public OutputNode(int id){
 		super(id);
 		outgoingEdges = null;	//Output nodes don't have outgoing edges
 	}

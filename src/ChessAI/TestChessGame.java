@@ -31,14 +31,14 @@ public class TestChessGame {
 			System.out.println("Current Game Board:");
 			NewGame.DisplayMatrixInConsole(NewGame.GetBoard());
 			Scanner reader = new Scanner(System.in);
-			System.out.println("Who's Turn: " + Integer.toString(NewGame.GetTurn()));
 			
-			
+			System.out.println("Who's Turn: " + Integer.toString(NewGame.GetTurn()));			
 			
 			
 			ChessOrgX = reader.nextInt();
 			ChessOrgY = reader.nextInt();
 			System.out.println("Display The Move Matrix:");
+			System.out.println("Selected Chess:" + NewGame.GetBoard()[ChessOrgX][ChessOrgY]);
 			NewGame.DisplayMatrixInConsole(NewGame.GetMoveList(NewGame.GetBoard()[ChessOrgX][ChessOrgY], ChessOrgX, ChessOrgY));
 
 			ChessDesX = reader.nextInt();

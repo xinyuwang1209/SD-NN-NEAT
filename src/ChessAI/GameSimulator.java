@@ -147,12 +147,12 @@ public class GameSimulator {
 	public boolean DeathCheck() {
 		if (Board[P1KingX][P1KingY] != -1) {
 			DeathFlag = true;
-			System.out.println("P2 wins");
+			//System.out.println("P2 wins");
 			Winner = 2;
 		}
-		if (Board[P2KingX][P2KingY] != 1) {
+		else if (Board[P2KingX][P2KingY] != 1) {
 			DeathFlag = true;
-			System.out.println("P1 wins");
+			//System.out.println("P1 wins");
 			Winner = 1;
 		} 
 		else {
@@ -176,7 +176,7 @@ public class GameSimulator {
 		if (ChessAbsId == 1) {
 			for (int i=-1;i<2;i++) {
 				for (int j=-1; j<2; j++) {
-					if (!((i==j) & (i==0))) {
+					if (!((i==j) && (i==0))) {
 						if (IsInBoard(ChessX+i, ChessY+j)) {
 							if (Board[ChessX+i][ChessY+j] != 0) {
 								temp = (int) Math.signum(Board[ChessX+i][ChessY+j]);
@@ -245,7 +245,7 @@ public class GameSimulator {
 						}
 					}
 				}
-				if (ChessY+i > 0) {
+				if (ChessY+i < 8) {
 					if (!HitRight) {
 						temp = (int) Math.signum(Board[ChessX][ChessY+i]);
 						if (Board[ChessX][ChessY+i] == 0) {
@@ -259,7 +259,7 @@ public class GameSimulator {
 						}
 					}
 				}
-				if ((ChessX-i > 0) & ChessY-i > 0) {
+				if ((ChessX-i > 0) && ChessY-i > 0) {
 					if (!HitLeftTop) {
 						temp = (int) Math.signum(Board[ChessX-i][ChessY-i]);
 						if (Board[ChessX-i][ChessY-i] == 0) {
@@ -273,7 +273,7 @@ public class GameSimulator {
 						}
 					}
 				}
-				if ((ChessX-i > 0) & ChessY+i < 7) {
+				if ((ChessX-i > 0) && ChessY+i < 7) {
 					if (!HitRightTop) {
 						temp = (int) Math.signum(Board[ChessX-i][ChessY+i]);
 						if (Board[ChessX-i][ChessY+i] == 0) {
@@ -287,7 +287,7 @@ public class GameSimulator {
 						}
 					}
 				}
-				if ((ChessX+i < 7) & ChessY-i > 0) {
+				if ((ChessX+i < 7) && ChessY-i > 0) {
 					if (!HitLeftBottom) {
 						temp = (int) Math.signum(Board[ChessX+i][ChessY-i]);
 						if (Board[ChessX+i][ChessY-i] == 0) {
@@ -301,7 +301,7 @@ public class GameSimulator {
 						}
 					}
 				}
-				if ((ChessX+i < 7) & ChessY+i < 0) {
+				if ((ChessX+i < 7) && ChessY+i < 0) {
 					if (!HitRightBottom) {
 						temp = (int) Math.signum(Board[ChessX+i][ChessY+i]);
 						if (Board[ChessX+i][ChessY+i] == 0) {
@@ -325,7 +325,7 @@ public class GameSimulator {
 			boolean HitRightBottom = false;
 			
 			for (int i=1; i<8; i++) {
-				if ((ChessX-i > 0) & ChessY-i > 0) {
+				if ((ChessX-i > 0) && ChessY-i > 0) {
 					if (!HitLeftTop) {
 						temp = (int) Math.signum(Board[ChessX-i][ChessY-i]);
 						if (Board[ChessX-i][ChessY-i] == 0) {
@@ -339,7 +339,7 @@ public class GameSimulator {
 						}
 					}
 				}
-				if ((ChessX-i > 0) & ChessY+i < 7) {
+				if ((ChessX-i > 0) && ChessY+i < 7) {
 					if (!HitRightTop) {
 						temp = (int) Math.signum(Board[ChessX-i][ChessY+i]);
 						if (Board[ChessX-i][ChessY+i] == 0) {
@@ -353,7 +353,7 @@ public class GameSimulator {
 						}
 					}
 				}
-				if ((ChessX+i < 7) & ChessY-i > 0) {
+				if ((ChessX+i < 7) && ChessY-i > 0) {
 					if (!HitLeftBottom) {
 						temp = (int) Math.signum(Board[ChessX+i][ChessY-i]);
 						if (Board[ChessX+i][ChessY-i] == 0) {
@@ -367,7 +367,7 @@ public class GameSimulator {
 						}
 					}
 				}
-				if ((ChessX+i < 7) & ChessY+i < 0) {
+				if ((ChessX+i < 7) && ChessY+i < 0) {
 					if (!HitRightBottom) {
 						temp = (int) Math.signum(Board[ChessX+i][ChessY+i]);
 						if (Board[ChessX+i][ChessY+i] == 0) {
@@ -539,20 +539,24 @@ public class GameSimulator {
 			}
 		}
 		else if (ChessAbsId == 6) {
-			if (Board[ChessX-ChessSign][ChessY] == 0) {
-				MoveList[ChessX-ChessSign][ChessY] = 1;
-//				System.out.println("For two moves");
-//				System.out.println(((ChessX == 1) && (ChessSign == -1)) | ((ChessX == 6) && (ChessSign == 1)));
-				if (((ChessX == 1) && (ChessSign == -1)) | ((ChessX == 6) && (ChessSign == 1))) {
-					if (Board[ChessX-2*ChessSign][ChessY] == 0) {
-						MoveList[ChessX-2*ChessSign][ChessY] = 1;
+			if(ChessX > 0 && ChessX < 7){
+				if (Board[ChessX-ChessSign][ChessY] == 0) {
+					MoveList[ChessX-ChessSign][ChessY] = 1;
+	//				System.out.println("For two moves");
+	//				System.out.println(((ChessX == 1) && (ChessSign == -1)) | ((ChessX == 6) && (ChessSign == 1)));
+					if (((ChessX == 1) && (ChessSign == -1)) || ((ChessX == 6) && (ChessSign == 1))) {
+						if (Board[ChessX-2*ChessSign][ChessY] == 0) {
+							MoveList[ChessX-2*ChessSign][ChessY] = 1;
+						}
 					}
 				}
 			}
 			if (ChessY > 0) {
-				temp = (int) Math.signum(Board[ChessX-ChessSign][ChessY-1]);
-				if ((temp != ChessSign) & (Board[ChessX-ChessSign][ChessY-1] != 0)) {
-					MoveList[ChessX-ChessSign][ChessY-1] = 1;
+				if(ChessX > 0 && ChessX < 7){
+					temp = (int) Math.signum(Board[ChessX-ChessSign][ChessY-1]);
+					if ((temp != ChessSign) && (Board[ChessX-ChessSign][ChessY-1] != 0)) {
+						MoveList[ChessX-ChessSign][ChessY-1] = 1;
+					}
 				}
 //				if (ChessX + ChessSign/2 == 3.5) {
 //					if ((Board[ChessX][ChessY-1] == -ChessId) && (Board[ChessX-2*ChessSign][ChessY-1] == 0)) {
@@ -563,9 +567,11 @@ public class GameSimulator {
 //				}
 			}
 			if (ChessY < 7) {
-				temp = (int) Math.signum(Board[ChessX-ChessSign][ChessY+1]);
-				if ((temp != ChessSign) & (Board[ChessX-ChessSign][ChessY+1] != 0)) {
-					MoveList[ChessX-ChessSign][ChessY+1] = 1;
+				if(ChessX > 0 && ChessX < 7){
+					temp = (int) Math.signum(Board[ChessX-ChessSign][ChessY+1]);
+					if ((temp != ChessSign) && (Board[ChessX-ChessSign][ChessY+1] != 0)) {
+						MoveList[ChessX-ChessSign][ChessY+1] = 1;
+					}
 				}
 //				if (ChessX + ChessSign/2 == 3.5) {
 //					if ((Board[ChessX][ChessY+1] == -ChessId) && (Board[ChessX-2*ChessSign][ChessY+1] == 0)) {
@@ -587,7 +593,7 @@ public class GameSimulator {
 		OutputBoard = CloneBoard(Board);
 		int temp = (int) Math.signum(OutputBoard[ChessOrgX][ChessOrgY]);
 //		System.out.println("Sign of targeted Chess: " + Integer.toString(temp));
-		if (((temp == 1) & (Player == 1)) | ((temp == -1) & (Player == 2))) {
+		if (((temp == 1) && (Player == 1)) || ((temp == -1) && (Player == 2))) {
 //			System.out.println("You cannot move other player's chess!");
 			return(OutputBoard);
 		}
@@ -605,7 +611,7 @@ public class GameSimulator {
 				int[][] TempBoard = CloneBoard(OutputBoard);
 				//special rule will apply here
 				//record King's coordinate
-				if (Math.abs(OutputBoard[ChessOrgX][ChessOrgY]) == 1) {
+				/*if (Math.abs(OutputBoard[ChessOrgX][ChessOrgY]) == 1) {
 					if (Player == 1) {
 						P1KingX = ChessDesX;
 						P1KingY = ChessDesY;
@@ -614,43 +620,49 @@ public class GameSimulator {
 						P2KingX = ChessDesX;
 						P2KingY = ChessDesY;
 					}
-				}
+				}*/
 				OutputBoard[ChessDesX][ChessDesY] = OutputBoard[ChessOrgX][ChessOrgY];
 				OutputBoard[ChessOrgX][ChessOrgY] = 0;
 				
 //				System.out.println("Chess Moved from (" + Integer.toString(ChessOrgX)+ ", " + Integer.toString(ChessOrgY) + ") to (" + Integer.toString(ChessDesX) + ", " + Integer.toString(ChessDesY) + ")");
 				TempPrevBoard = CloneBoard(OutputBoard);
-				if (Turn == 1) {
+				/*if (Turn == 1) {
 					Turn = 2;
 				}
 				else {
 					Turn = 1;
-				}
+				}*/
 				return(OutputBoard);
 			}
 		}
 	}
 				
 	public boolean Move(int Player, int ChessOrgX, int ChessOrgY, int ChessDesX, int ChessDesY) {
-		System.out.println("Trying to move Chess...");
+		//System.out.println("Trying to move Chess...");
 		int temp = (int) Math.signum(Board[ChessOrgX][ChessOrgY]);
-		System.out.println("Sign of targeted Chess: " + Integer.toString(temp));
-		if (((temp == 1) & (Player == 1)) | ((temp == -1) & (Player == 2))) {
-			System.out.println("You cannot move other player's chess!");
+		//System.out.println("Sign of targeted Chess: " + Integer.toString(temp));
+		
+		//System.out.println("CURRENT PLAYER: " + Player);
+		//System.out.println("Turn: " + Turn);
+		
+		
+		if (((temp == 1) && (Player == 1)) || ((temp == -1) && (Player == 2))) {
+			//System.out.println("You cannot move other player's chess!");
 			return(false);
 		}
 		else if (Turn != Player) {
-			System.out.println("It's not your turn to move chess!");
+			//System.out.println("It's not your turn to move chess!");
 			return(false);
 		}
 		else {
-			System.out.println("Player Identity verified");
+			//System.out.println("Player Identity verified");
 			boolean IsMoveValid = CheckMoveValidality(ChessOrgX, ChessOrgY, ChessDesX, ChessDesY);
 			if (!IsMoveValid) {
 				return(false);
 			}
 			else {
 				int[][] TempBoard = CloneBoard(Board);
+				updateAvailChess(Player, ChessOrgX, ChessOrgY, ChessDesX, ChessDesY);
 				//special rule will apply here
 				//record King's coordinate
 				if (Math.abs(Board[ChessOrgX][ChessOrgY]) == 1) {
@@ -670,7 +682,7 @@ public class GameSimulator {
 				PrevMove[2] = ChessDesX;
 				PrevMove[3] = ChessDesY;
 				
-				System.out.println("Chess Moved from (" + Integer.toString(ChessOrgX)+ ", " + Integer.toString(ChessOrgY) + ") to (" + Integer.toString(ChessDesX) + ", " + Integer.toString(ChessDesY) + ")");
+				//System.out.println("Chess Moved from (" + Integer.toString(ChessOrgX)+ ", " + Integer.toString(ChessOrgY) + ") to (" + Integer.toString(ChessDesX) + ", " + Integer.toString(ChessDesY) + ")");
 				PrevBoard = CloneBoard(Board);
 				if (Turn == 1) {
 					Turn = 2;
@@ -685,7 +697,7 @@ public class GameSimulator {
 	
 	public int[][][] ReplaceMatrix(int[][][] Matrices, int[][] Matrix, int Index) {
 		if (Index < Matrices.length) {
-			if ((Matrices[0].length == 8) & (Matrices[0][0].length == 8)) {
+			if ((Matrices[0].length == 8) && (Matrices[0][0].length == 8)) {
 				for (int i=0;i<8;i++) {
 					for (int j=0;j<8;j++) {
 						Matrices[Index][i][j] = Matrix[i][j];
@@ -737,5 +749,22 @@ public class GameSimulator {
 			}
 		}
 		return(InputMatrices);
+	}
+	
+	public void updateAvailChess(int Player, int ChessOrgX, int ChessOrgY, int ChessDesX, int ChessDesY) {
+		int[][] availChess;
+		if (Player == 1) {
+			availChess = P1AvailChess;
+		}
+		else {
+			availChess = P2AvailChess;
+		}
+		for (int i=0; i<8;i++) {
+			if ((availChess[i][0] == ChessOrgX) && (availChess[i][1] == ChessOrgY)) {
+				availChess[i][0] = ChessDesX;
+				availChess[i][1] = ChessDesY;
+			}
+		}
+		return;
 	}
 }

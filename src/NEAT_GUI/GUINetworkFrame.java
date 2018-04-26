@@ -73,7 +73,7 @@ public class GUINetworkFrame extends JFrame{
 		/*
 		 * Setting up the JFrame
 		 * */
-		setTitle("NEAT XOR Neural Network");
+		setTitle("NEAT Neural Network GUI");
 		setBounds(0, 0, 1250, 750); 
 		setLocationRelativeTo(null);
 		setResizable(false);
@@ -92,5 +92,8 @@ public class GUINetworkFrame extends JFrame{
 		
 		guiNetworkPanel.setNetwork(gNetwork);
 	}
+	
+	public void setFrameTitle(String title) {
+		setTitle(title);
+	}
 }
-

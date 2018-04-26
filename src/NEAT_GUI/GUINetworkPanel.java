@@ -51,14 +51,14 @@ import java.awt.Color;
 public class GUINetworkPanel extends JPanel{
 
 	private GNetwork gNetwork;
-	private int nodeSize;
+	private double nodeSize;
 	/*
 	 * Constructor 
 	 */
 	
 	public GUINetworkPanel(){
 		setBorder(BorderFactory.createLineBorder(Color.BLACK));
-		setBackground(Color.DARK_GRAY);
+		setBackground(Color.GRAY);
 		repaint();
 	}
 	
@@ -100,6 +100,7 @@ public class GUINetworkPanel extends JPanel{
 		GNode n2 = c.getEndNode();
 		
 		AlphaComposite alcom = AlphaComposite.getInstance(AlphaComposite.SRC_OVER, c.getAlpha());
+		//System.out.println("The alpha value is " + c.getAlpha());
 		g2d.setComposite(alcom);
 		
 		if(c.getWeight() > 0) g2d.setColor(Color.WHITE);
@@ -141,10 +142,6 @@ public class GUINetworkPanel extends JPanel{
 			hidKeyIter = hidLayers.keySet().iterator();
 			outKeyIter = outLayer.keySet().iterator();
 			edgeKeyIter = netEdges.keySet().iterator();
-			//Paint edges
-			while(edgeKeyIter.hasNext()) {
-				paintEdge(g2d, netEdges.get(edgeKeyIter.next()));
-			}
 			
 			//Paint input nodes
 			while(inKeyIter.hasNext()) {
@@ -153,23 +150,30 @@ public class GUINetworkPanel extends JPanel{
 			
 
 			//Paint hidden nodes per hidden layer
+			nodeSize = gNetwork.getHidNodeSize();
 			while(hidKeyIter.hasNext()) {
 				paintNode(g2d, hidLayers.get(hidKeyIter.next()));
 			}
 
 			//Paint output nodes
+			nodeSize = gNetwork.getNodeSize();
 			while(outKeyIter.hasNext()) {
 				paintNode(g2d, outLayer.get(outKeyIter.next()));
 			}		
+			
+			//Paint edges
+			while(edgeKeyIter.hasNext()) {
+				paintEdge(g2d, netEdges.get(edgeKeyIter.next()));
+			}
 				
 			//Code for debugging
-			System.out.println("Number of inputNodes: " + inLayer.size());
+			/*System.out.println("Number of inputNodes: " + inLayer.size());
 			System.out.println("Number of hiddenNodes: " + hidLayers.size());
 			System.out.println("Number of outputNodes: " + outLayer.size());
-			System.out.println("Number of edges: " + netEdges.size());
+			System.out.println("Number of edges: " + netEdges.size());*/
 			 
 		}catch(Exception e){
-			System.out.println("Help I'm not working still: " + e);
+			//System.out.println("Help I'm not working still: " + e);
 		}
 	}
 }
