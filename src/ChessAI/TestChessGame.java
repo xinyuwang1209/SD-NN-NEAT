@@ -23,6 +23,7 @@ public class TestChessGame {
 		int ChessOrgY;
 		int ChessDesX;
 		int ChessDesY;
+		int[][] TempBoard;
 		
 		int GameRoundCounter = 0;
 		
@@ -45,6 +46,12 @@ public class TestChessGame {
 			ChessDesY = reader.nextInt();
 			System.out.println("Input Validality:" + NewGame.CheckMoveValidality(ChessOrgX, ChessOrgY, ChessDesX, ChessDesY));
 			System.out.println();
+			
+			
+			System.out.println();
+			System.out.println("Simulate Move:");
+			TempBoard = NewGame.SimulateMove(NewGame.GetTurn(), ChessOrgX, ChessOrgY, ChessDesX, ChessDesY);
+			NewGame.DisplayMatrixInConsole(TempBoard);
 			
 			if (NewGame.GetTurn() == 1) {
 				System.out.println(NewGame.CheckMoveValidality(ChessOrgX, ChessOrgY, ChessDesX, ChessDesY));

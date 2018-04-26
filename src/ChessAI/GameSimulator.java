@@ -58,6 +58,10 @@ public class GameSimulator {
 		return(TargetBoard);
 	}
 	public boolean CheckMoveValidality(int ChessOrgX, int ChessOrgY, int ChessDesX, int ChessDesY) {
+		if ((ChessOrgX < 0) || (ChessOrgX > 7) || (ChessOrgY < 0) || (ChessOrgY > 7) || (ChessDesX < 0) || (ChessDesX > 7) || (ChessDesY < 0) || (ChessDesY > 7)) {
+			return(false);
+		}
+
 		int[][] ChessMoveList = GetMoveList(Board[ChessOrgX][ChessOrgY],ChessOrgX,ChessOrgY);
 		if (ChessMoveList[ChessDesX][ChessDesY] == 1) {
 			return(true);
@@ -640,6 +644,7 @@ public class GameSimulator {
 	public boolean Move(int Player, int ChessOrgX, int ChessOrgY, int ChessDesX, int ChessDesY) {
 		//System.out.println("Trying to move Chess...");
 		int temp = (int) Math.signum(Board[ChessOrgX][ChessOrgY]);
+		boolean IsPawnTransform = false;
 		//System.out.println("Sign of targeted Chess: " + Integer.toString(temp));
 		
 		//System.out.println("CURRENT PLAYER: " + Player);
@@ -682,6 +687,17 @@ public class GameSimulator {
 				PrevMove[2] = ChessDesX;
 				PrevMove[3] = ChessDesY;
 				
+				if ((Board[ChessDesX][ChessDesY] == -6) && (Player == 1) && (ChessDesX == 7)) {
+					IsPawnTransform = true;
+				}
+				else if ((Board[ChessDesX][ChessDesY] == 6) && (Player == 2) && (ChessDesX == 0)) {
+					IsPawnTransform = true;
+				}
+				if (IsPawnTransform) {
+					Board[ChessDesX][ChessDesY] = PawnTransform(Player, ChessDesY);
+					IsPawnTransform = false;
+				}
+				
 				//System.out.println("Chess Moved from (" + Integer.toString(ChessOrgX)+ ", " + Integer.toString(ChessOrgY) + ") to (" + Integer.toString(ChessDesX) + ", " + Integer.toString(ChessDesY) + ")");
 				PrevBoard = CloneBoard(Board);
 				if (Turn == 1) {
@@ -693,6 +709,26 @@ public class GameSimulator {
 				return(true);
 			}
 		}
+	}
+	
+	public int PawnTransform(int Player, int ChessDesY) {
+		int NewChessId = 0;
+		if ((ChessDesY == 0) || (ChessDesY == 7)) {
+			NewChessId = 5;
+		}
+		else if ((ChessDesY == 1) || (ChessDesY == 6)) {
+			NewChessId = 4;
+		}
+		else if ((ChessDesY == 2) || (ChessDesY == 5)) {
+			NewChessId = 3;
+		}
+		else if (ChessDesY == 3) {
+			NewChessId = 2;
+		}
+		if (Player == 1) {
+			NewChessId = 0-NewChessId;
+		}
+		return(NewChessId);
 	}
 	
 	public int[][][] ReplaceMatrix(int[][][] Matrices, int[][] Matrix, int Index) {
