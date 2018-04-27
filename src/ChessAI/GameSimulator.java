@@ -1,5 +1,8 @@
 package ChessAI;
 
+import java.util.ArrayList;
+import java.util.Collections;
+
 public class GameSimulator {
 	//private int[] counter = new int[338];
 	private int[][] Board = new int[8][8];
@@ -56,6 +59,34 @@ public class GameSimulator {
 			TargetBoard[i] = DesBoard[i].clone();
 		}
 		return(TargetBoard);
+	}
+	
+	public void RandomizeAvailChess(int Player) {
+		int[][] AvailChess;
+		int[][] NewAvailChess = new int[16][2];
+		if (Player == 1) {
+			AvailChess = P1AvailChess;
+		}
+		else {
+			AvailChess = P2AvailChess;			
+		}		
+		ArrayList<Integer> Index = new ArrayList<Integer>();
+		for (int i=0;i<16;i++) {
+			Index.add(i);			
+			
+		}
+		Collections.shuffle(Index);
+		for (int i=0;i<16;i++) {
+			NewAvailChess[i][0] = AvailChess[Index.get(i)][0];
+			NewAvailChess[i][1] = AvailChess[Index.get(i)][1];
+		}
+		if (Player == 1) {
+			P1AvailChess = NewAvailChess;
+		}
+		else {
+			P2AvailChess = NewAvailChess;
+		}		
+		return;
 	}
 	public boolean CheckMoveValidality(int ChessOrgX, int ChessOrgY, int ChessDesX, int ChessDesY) {
 		if ((ChessOrgX < 0) || (ChessOrgX > 7) || (ChessOrgY < 0) || (ChessOrgY > 7) || (ChessDesX < 0) || (ChessDesX > 7) || (ChessDesY < 0) || (ChessDesY > 7)) {
